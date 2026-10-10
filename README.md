@@ -34,8 +34,8 @@ HOA / investigative cuts were a **stress test**, not the product ceiling.
 python scripts/style_dna.py extract --video path/to/reference.mp4 --out examples/styles/my_dna.json
 
 # Combine DNA + job profile → planning defaults
-python scripts/style_dna.py apply \\
-  --dna examples/styles/my_dna.json \\
+python scripts/style_dna.py apply \
+  --dna examples/styles/my_dna.json \
   --profile examples/profiles/explainer.json
 
 # Asset contact sheet (catch mislabeled files before edit)
@@ -49,6 +49,8 @@ python scripts/revise.py --edit ... --revision ... --out ...
 python scripts/build_timeline.py --edit ... --out ...
 python scripts/render.py --timeline ... --out ... --audio ...
 ```
+
+For the single-command path from narration or an existing edit spec to a finished render, use `scripts/atlas_pipeline.py`. It orchestrates the full flow of plan → optional QC → timeline → render without manually chaining each CLI step.
 
 Requires: Python 3.10+, ffmpeg, Pillow.
 
