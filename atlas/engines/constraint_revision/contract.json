@@ -1,0 +1,13 @@
+{
+  "name": "ConstraintRevisionEngine",
+  "version": "0.1",
+  "description": "Applies revision instructions to an Edit Spec while enforcing locks.",
+  "inputs": ["edit_specification", "revision_request"],
+  "outputs": ["revised_edit_specification", "revision_report"],
+  "rules": [
+    "Locked elements cannot change without unlock",
+    "Voiceover global lock is absolute",
+    "Evidence status defaults to locked",
+    "Partial success is valid when some instructions apply and others are blocked"
+  ]
+}

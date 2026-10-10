@@ -1,0 +1,17 @@
+{
+  "assets": {},
+  "banned": {
+    "bench_01": "MISLABELED: actually pagoda/East-Asian gazebo - banned permanently",
+    "street_residential_01": "MISLABELED: night park bench - wrong mood/geo",
+    "aerial_suburban_01": "Dense red-roof European-style aerial - not tiny homes",
+    "gazebo_01": "Pagoda gazebo",
+    "fetched_video_residential_01": "Times Square - wrong geography",
+    "dead_trees_01": "iStock watermark + credit visible",
+    "tax_forms_01": "Personal 1040-SR - wrong document type for HOA tax claim",
+    "modern_houses_rail_01": "European modern architecture",
+    "suburban_houses_01": "California-style hills - weak Tennessee fit",
+    "fetched_street_01": "German/European apartment street",
+    "fetched_suburban_01": "California hills house - wrong for pavilion"
+  },
+  "notes": "Local stills and VO live on the build machine under assets/contextual and assets/*.mp3. Add paths here when committing media separately."
+}
