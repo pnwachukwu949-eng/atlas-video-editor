@@ -1,1 +1,1 @@
-"""Editorial engines: constraint, style DNA, QC."""
+"""Editorial engines: constraint, style DNA, QC, planner."""

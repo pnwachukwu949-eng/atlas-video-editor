@@ -1,0 +1,7 @@
+Meet Atlas. Atlas is an AI video editor that understands story structure.
+You give it a script, a voiceover, and your assets.
+Atlas plans the beats, picks visuals, and respects what you lock.
+Revisions change only what you ask for.
+The same engine works for explainers, product videos, and investigations.
+Style DNA lets you match the pacing of a reference cut.
+Start with a first cut in minutes, not days.
