@@ -1,0 +1,19 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas Job Profile",
+  "description": "Genre-agnostic defaults for an edit job. Investigative is one profile among many.",
+  "type": "object",
+  "required": ["profile_id", "display_name"],
+  "properties": {
+    "profile_id": { "type": "string" },
+    "display_name": { "type": "string" },
+    "evidence_strictness": { "type": "string", "enum": ["off", "light", "strict"] },
+    "default_caption_mode": { "type": "string", "enum": ["none", "burned_in", "optional"] },
+    "repeat_cap": { "type": "integer", "minimum": 1 },
+    "allow_illustrative_graphics": { "type": "boolean" },
+    "prefer_real_footage": { "type": "boolean" },
+    "pacing": { "type": "string", "enum": ["relaxed", "balanced", "dense"] },
+    "style_dna_id": { "type": "string" },
+    "notes": { "type": "string" }
+  }
+}

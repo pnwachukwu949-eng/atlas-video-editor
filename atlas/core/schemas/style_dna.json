@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas Style DNA",
+  "description": "Editing grammar extracted from a reference video or authored by hand. Applied to new material — not a visual clone.",
+  "type": "object",
+  "required": ["style_id", "version", "grammar"],
+  "properties": {
+    "style_id": { "type": "string" },
+    "version": { "type": "string" },
+    "source": {
+      "type": "object",
+      "properties": {
+        "reference_path": { "type": "string" },
+        "extracted_at": { "type": "string" },
+        "method": { "type": "string", "enum": ["ffprobe_scene", "manual", "hybrid"] }
+      }
+    },
+    "grammar": {
+      "type": "object",
+      "properties": {
+        "avg_shot_seconds": { "type": "number" },
+        "median_shot_seconds": { "type": "number" },
+        "cut_density_per_minute": { "type": "number" },
+        "preferred_transition": { "type": "string", "enum": ["hard_cut", "crossfade", "mix"] },
+        "caption_style": { "type": "object" },
+        "broll_density": { "type": "string", "enum": ["low", "medium", "high"] },
+        "hold_on_key_claims": { "type": "boolean" },
+        "motion": { "type": "string", "enum": ["static", "slow_push", "mixed"] },
+        "visual_mode_changes": { "type": "string" }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}

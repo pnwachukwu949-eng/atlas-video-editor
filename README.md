@@ -1,92 +1,109 @@
 # Atlas Video Editor
 
-**AI video editor with editorial intelligence and constraint memory.**
+**AI video editor with editorial intelligence, constraint memory, and style DNA.**
 
-> Give Atlas a script + voiceover + visual assets,  
-> and it produces a structured, context-aware edit that can be reviewed and revised  
-> without destroying what the human has already approved.
+> Give Atlas a script + voiceover + visual assets (+ optional reference video),  
+> and it produces a structured, context-aware edit for **any assigned job** —  
+> then accepts controlled revisions without destroying what you already approved.
+
+HOA / investigative cuts were a **stress test**, not the product ceiling.
 
 ---
 
-## Status (v0.22)
+## Status
 
 | Capability | Status |
 |------------|--------|
-| Edit Specification (structured beats) | Working |
+| Edit Specification → Timeline → MP4 | Working |
 | Constraint & Revision Engine (locks) | Working |
-| Timeline generation | Working |
-| Asset registry + provenance bans | Working |
-| Typography overlays (including `$`) | Working |
-| Burned-in captions | Working |
-| Media Renderer (MP4 + VO mux) | Working |
-| Evidence lock (B10 fail-closed) | Working |
-| VO-synced beat timing | Working |
-| Photo acquisition (basic) | Working |
-| Pre-render QC script | Working |
-| Full HOA cut (shareable Stage A) | `hoa_v0.22` |
+| Asset registry + bans | Working |
+| **Style DNA v0.1** (extract grammar from reference) | **Working** |
+| **Job profiles** (explainer / investigative / product / social) | **Working** |
+| **Repeat-cap + banned + brightness QC** | **Working** |
+| **Asset contact sheet** | **Working** |
+| HOA baseline freeze | **v0.24** |
+| Style DNA → full auto beat planner | Next |
+| UI | Not yet |
 
 ---
 
-## Quick Start
+## Quick start
 
 ```bash
-# One-command build from edit spec
-python scripts/atlas_build.py --edit examples/hoa_v0.22_edit_spec.json --out renders/hoa_v0.22.mp4
+# Style DNA from a reference video
+python scripts/style_dna.py extract --video path/to/reference.mp4 --out examples/styles/my_dna.json
 
-# Or step by step:
-python scripts/revise.py --edit examples/hoa_v0.22_edit_spec.json --revision examples/sample_revision.json --out examples/revised.json
-python scripts/build_timeline.py --edit examples/hoa_v0.22_edit_spec.json --out examples/hoa_v0.22_timeline.json
-python scripts/render.py --timeline examples/hoa_v0.22_timeline.json --out renders/output.mp4
-python scripts/qc.py --video renders/output.mp4 --edit examples/hoa_v0.22_edit_spec.json
+# Combine DNA + job profile → planning defaults
+python scripts/style_dna.py apply \\
+  --dna examples/styles/my_dna.json \\
+  --profile examples/profiles/explainer.json
+
+# Asset contact sheet (catch mislabeled files before edit)
+python scripts/qc_assets.py contact-sheet --out renders/asset_contact_sheet.jpg
+
+# QC an edit spec (repeat cap ≤2, bans, brightness)
+python scripts/qc_assets.py edit --edit examples/hoa_v0.24_edit_spec.json --max-uses 2
+
+# Build / revise / render (existing)
+python scripts/revise.py --edit ... --revision ... --out ...
+python scripts/build_timeline.py --edit ... --out ...
+python scripts/render.py --timeline ... --out ... --audio ...
 ```
 
-Requires: Python 3.10+, ffmpeg, Pillow (for generated cards).
+Requires: Python 3.10+, ffmpeg, Pillow.
 
 ---
 
-## Project Structure
+## Job profiles
 
-```
-atlas-video-editor/
-├── atlas/
-│   ├── core/schemas/           # Edit Spec, Revision, Timeline JSON schemas
-│   ├── engines/constraint_revision/
-│   ├── acquisition/            # Photo fetcher
-│   └── rendering/              # Timeline bridge + Media Renderer
-├── assets/
-│   ├── registry.json           # Asset paths, rights, bans
-│   └── contextual/             # Local stills (not all committed; large)
-├── examples/                   # Edit specs + timelines (v0.5 → v0.22)
-├── renders/                    # Output MP4s (gitignored)
-├── scripts/                    # CLI tools
-├── docs/architecture.md
-└── tests/
-```
+| Profile | Evidence | Repeat cap | Pacing |
+|---------|----------|------------|--------|
+| `investigative` | strict | 2 | balanced |
+| `explainer` | light | 2 | balanced |
+| `product` | off | 3 | dense |
+| `social` | off | 2 | dense |
+
+Profiles live in `examples/profiles/`.
 
 ---
 
-## Core Principles
+## Style DNA
+
+Extracts **grammar**, not pixels:
+
+- average / median shot length
+- cut density
+- preferred transition
+- caption posture
+- B-roll density / motion hints
+
+Apply with a job profile to get planning defaults for a **new** project.
+
+---
+
+## QC rules (from HOA stress tests)
+
+1. **Repeat cap** — same `asset_id` counted even if darkened under a card  
+2. **Banned list** — wrong-geo, watermarks, mislabeled files never reach timeline  
+3. **Contact sheet** — labeled grid before use (pagoda-as-bench class failures)  
+4. **Brightness** — flag very dark plates under text  
+
+---
+
+## Roadmap
+
+- **Done:** HOA v0.24 freeze, Style DNA v0.1, profiles, QC  
+- **Next:** Style DNA → generic beat planner; source-plate tracking under composites  
+- **Later:** richer reference analysis; UI; evidence pipeline for strict profiles  
+
+---
+
+## Core principles
 
 1. Story first, effects second  
-2. Integrity must be invisible when possible  
-3. Reality is the default; graphics explain what reality cannot  
-4. Fail closed on evidence  
-5. Constraint intelligence = creative intelligence  
+2. Integrity invisible when possible  
+3. Reality default; graphics when reality cannot  
+4. Fail closed on evidence (when profile is strict)  
+5. Constraint intelligence = professional revisions  
 6. Cinematic ≠ more effects  
-7. Visuals follow narration semantic timing  
-8. Banned assets stay banned (wrong geo, watermarks, mislabeled files)
-
----
-
-## Roadmap (A → D)
-
-- **A** Shareable HOA cut with VO sync and honest evidence treatment  
-- **B** Repeatable editor CLI + revision memory  
-- **C** Style DNA from reference video  
-- **D** Evidence-grade asset pipeline (real exhibit vs illustration)
-
----
-
-## License / note
-
-Prototype for product development. Contextual photos may require their own licenses for redistribution.
+7. Any job — not one genre  
