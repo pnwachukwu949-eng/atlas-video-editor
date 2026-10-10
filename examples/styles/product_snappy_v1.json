@@ -1,0 +1,24 @@
+{
+  "style_id": "product_snappy_v1",
+  "version": "0.1",
+  "source": {
+    "method": "manual",
+    "notes": "Short product explainer grammar"
+  },
+  "grammar": {
+    "avg_shot_seconds": 4.0,
+    "median_shot_seconds": 3.5,
+    "cut_density_per_minute": 15.0,
+    "preferred_transition": "hard_cut",
+    "caption_style": {
+      "position": "bottom",
+      "max_lines": 2,
+      "emphasis": "key_nouns"
+    },
+    "broll_density": "medium",
+    "hold_on_key_claims": false,
+    "motion": "slow_push",
+    "visual_mode_changes": "moderate"
+  },
+  "notes": "Grammar only"
+}
