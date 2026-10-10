@@ -1,0 +1,34 @@
+{
+  "source_of_truth": "local sandbox atlas-video-editor working tree",
+  "note": "Full engine.py files may exceed GitHub connector batch size. CLIs, profiles, schemas, and package __init__ files are on main. Do not rewrite engines — copy verbatim from working tree if missing.",
+  "engines": {
+    "atlas/engines/constraint_revision/engine.py": {
+      "version": "0.2",
+      "features": ["unlock_required", "unlock_reason", "fail-closed", "append_revision_log"]
+    },
+    "atlas/engines/style_dna/engine.py": {
+      "version": "0.1",
+      "features": ["extract_from_video", "apply_to_edit_defaults"]
+    },
+    "atlas/engines/qc/engine.py": {
+      "version": "0.1",
+      "features": ["repeat_cap", "banned", "brightness", "contact_sheet"]
+    },
+    "atlas/engines/planner/engine.py": {
+      "version": "0.1",
+      "features": ["plan from narration + DNA + profile"]
+    }
+  },
+  "cli": [
+    "scripts/style_dna.py",
+    "scripts/plan_edit.py",
+    "scripts/revise.py",
+    "scripts/qc_assets.py",
+    "scripts/render.py"
+  ],
+  "do_not_create": [
+    "atlas/acquisition/style_extractor.py",
+    "atlas/core/profiles.py",
+    "atlas/config/profiles/"
+  ]
+}
