@@ -1,0 +1,11 @@
+{
+  "profile_id": "social",
+  "display_name": "Social / short-form",
+  "evidence_strictness": "off",
+  "default_caption_mode": "burned_in",
+  "repeat_cap": 2,
+  "allow_illustrative_graphics": true,
+  "prefer_real_footage": true,
+  "pacing": "dense",
+  "notes": "High cut density defaults when Style DNA is short-form."
+}

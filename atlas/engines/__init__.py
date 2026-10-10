@@ -1,1 +1,1 @@
-"""Editorial engines (constraint, revision, layout, story arc)."""
+"""Editorial engines: constraint, style DNA, QC."""

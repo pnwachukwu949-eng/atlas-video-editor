@@ -1,0 +1,11 @@
+{
+  "profile_id": "investigative",
+  "display_name": "Investigative / claims-sensitive",
+  "evidence_strictness": "strict",
+  "default_caption_mode": "burned_in",
+  "repeat_cap": 2,
+  "allow_illustrative_graphics": true,
+  "prefer_real_footage": true,
+  "pacing": "balanced",
+  "notes": "Fail closed on evidence. Allegations labeled. Repeat cap strict."
+}

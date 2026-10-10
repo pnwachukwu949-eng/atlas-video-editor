@@ -1,0 +1,11 @@
+{
+  "profile_id": "explainer",
+  "display_name": "Explainer / educational",
+  "evidence_strictness": "light",
+  "default_caption_mode": "burned_in",
+  "repeat_cap": 2,
+  "allow_illustrative_graphics": true,
+  "prefer_real_footage": true,
+  "pacing": "balanced",
+  "notes": "Clear structure, moderate B-roll, captions for key terms."
+}

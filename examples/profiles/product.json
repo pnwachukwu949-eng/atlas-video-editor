@@ -1,0 +1,11 @@
+{
+  "profile_id": "product",
+  "display_name": "Product / marketing",
+  "evidence_strictness": "off",
+  "default_caption_mode": "optional",
+  "repeat_cap": 3,
+  "allow_illustrative_graphics": true,
+  "prefer_real_footage": true,
+  "pacing": "dense",
+  "notes": "Faster cuts allowed. No evidence gates. Still respect locks and bans."
+}
