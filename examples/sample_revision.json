@@ -1,0 +1,16 @@
+{
+  "revision_id": "rev_sample_001",
+  "target_edit": "hoa_v0.22",
+  "instructions": [
+    {
+      "action": "do_not_touch",
+      "elements": ["voiceover", "B10.visual", "B10.evidence_status"]
+    },
+    {
+      "action": "change_caption",
+      "beat_id": "B01a",
+      "new_value": "$5 Million · Three HOAs"
+    }
+  ],
+  "notes": "Sample revision — voiceover and B10 evidence remain locked"
+}

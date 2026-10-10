@@ -1,0 +1,44 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas Revision Request",
+  "description": "Human instruction telling Atlas what to change and what must remain untouched.",
+  "type": "object",
+  "required": ["revision_id", "target_edit", "instructions"],
+  "properties": {
+    "revision_id": { "type": "string" },
+    "target_edit": { "type": "string" },
+    "instructions": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["action"],
+        "properties": {
+          "action": {
+            "type": "string",
+            "enum": [
+              "change_visual_asset",
+              "change_layout",
+              "change_typography",
+              "change_timing",
+              "change_motion",
+              "change_caption",
+              "change_evidence_status",
+              "lock_element",
+              "unlock_element",
+              "do_not_touch"
+            ]
+          },
+          "beat_id": { "type": "string" },
+          "element_path": { "type": "string" },
+          "new_value": {},
+          "elements": {
+            "type": "array",
+            "items": { "type": "string" }
+          },
+          "reason": { "type": "string" }
+        }
+      }
+    },
+    "notes": { "type": "string" }
+  }
+}
