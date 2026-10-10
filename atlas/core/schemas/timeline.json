@@ -1,0 +1,34 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas Timeline",
+  "description": "Renderer-ready timeline produced from an Edit Specification.",
+  "type": "object",
+  "required": ["timeline_id", "duration_seconds", "tracks"],
+  "properties": {
+    "timeline_id": { "type": "string" },
+    "source_edit": { "type": "string" },
+    "duration_seconds": { "type": "number" },
+    "frame_rate": { "type": "number" },
+    "resolution": {
+      "type": "object",
+      "properties": {
+        "width": { "type": "integer" },
+        "height": { "type": "integer" }
+      }
+    },
+    "tracks": {
+      "type": "object",
+      "properties": {
+        "video": { "type": "array" },
+        "audio": { "type": "array" },
+        "captions": { "type": "array" },
+        "overlays": { "type": "array" }
+      }
+    },
+    "locks_honored": {
+      "type": "array",
+      "items": { "type": "string" }
+    },
+    "metadata": { "type": "object" }
+  }
+}

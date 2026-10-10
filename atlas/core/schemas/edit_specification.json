@@ -1,0 +1,49 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "Atlas Edit Specification",
+  "description": "Structured editorial plan for a video edit.",
+  "type": "object",
+  "required": ["edit_id", "beats"],
+  "properties": {
+    "edit_id": { "type": "string" },
+    "version": { "type": "string" },
+    "source_voiceover": {
+      "type": "object",
+      "properties": {
+        "asset_id": { "type": "string" },
+        "path": { "type": "string" },
+        "duration_seconds": { "type": "number" },
+        "locked": { "type": "boolean" }
+      }
+    },
+    "global_locks": {
+      "type": "object",
+      "properties": {
+        "voiceover": { "type": "boolean" },
+        "overall_duration": { "type": "boolean" },
+        "evidence_policy": { "type": "boolean" }
+      }
+    },
+    "beats": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "required": ["beat_id", "start", "end"],
+        "properties": {
+          "beat_id": { "type": "string" },
+          "start": { "type": "number" },
+          "end": { "type": "number" },
+          "narration_summary": { "type": "string" },
+          "visual": { "type": "object" },
+          "typography": { "type": "object" },
+          "captions": { "type": "object" },
+          "evidence_status": { "type": "object" },
+          "composition": { "type": "object" },
+          "motion": { "type": "object" },
+          "timing": { "type": "object" }
+        }
+      }
+    },
+    "metadata": { "type": "object" }
+  }
+}
