@@ -3,13 +3,13 @@
 Atlas full pipeline — any job, not HOA-specific.
 
 Paths:
-  A) Narration → plan → timeline → render → optional QC
+  A) Narration (+ optional audio listen) → plan → timeline → render → optional QC
   B) Existing edit spec → timeline → render → optional QC
 
 Examples:
   python scripts/atlas_pipeline.py \\
     --narration examples/samples/product_explainer_narration.txt \\
-    --duration 28 \\
+    --audio assets/vo.mp3 \\
     --dna examples/styles/product_snappy_v1.json \\
     --profile examples/profiles/product.json \\
     --out renders/product_pipeline.mp4
@@ -48,7 +48,7 @@ def main() -> None:
     src.add_argument("--narration", help="Narration text file (triggers planning)")
     src.add_argument("--edit", help="Existing Edit Spec JSON (skip planning)")
 
-    ap.add_argument("--duration", type=float, help="Required with --narration (VO seconds)")
+    ap.add_argument("--duration", type=float, default=None, help="VO seconds (optional if --audio can be probed)")
     ap.add_argument("--dna", default=None, help="Style DNA JSON")
     ap.add_argument("--profile", default=None, help="Job profile JSON")
     ap.add_argument("--assets", default=None, help="Comma-separated asset_id pool for planner")
@@ -56,7 +56,7 @@ def main() -> None:
     ap.add_argument("--vo-id", default="vo_main")
 
     ap.add_argument("--out", required=True, help="Output MP4 path")
-    ap.add_argument("--audio", default=None, help="Optional voiceover audio file")
+    ap.add_argument("--audio", default=None, help="Voiceover audio (probes duration; muxed on render)")
     ap.add_argument("--workdir", default=None, help="Directory for intermediate JSON (default: beside --out)")
 
     ap.add_argument("--qc", action="store_true", help="Run edit QC (repeat cap + bans) before render")
@@ -74,13 +74,30 @@ def main() -> None:
     timeline_path = work / "timeline.json"
     qc_path = work / "qc_report.json"
 
+    duration = args.duration
+    if args.narration and duration is None and args.audio:
+        transcript_path = work / "transcript.json"
+        listen_cmd = [
+            sys.executable, str(ROOT / "scripts/listen.py"),
+            "--audio", str(args.audio),
+            "--narration", str(args.narration),
+            "--out", str(transcript_path),
+        ]
+        run(listen_cmd, "Listen (audio → timed segments)")
+        listened = json.loads(transcript_path.read_text())
+        duration = float((listened.get("source") or {}).get("duration_seconds") or 0)
+        if duration <= 0:
+            print("Listen could not determine duration; pass --duration", file=sys.stderr)
+            sys.exit(1)
+        print(f"  listened duration: {duration:.3f}s")
+
     if args.narration:
-        if args.duration is None:
-            ap.error("--duration is required with --narration")
+        if duration is None:
+            ap.error("--duration is required with --narration (or pass --audio to probe it)")
         plan_cmd = [
             sys.executable, str(ROOT / "scripts/plan_edit.py"),
             "--narration", str(args.narration),
-            "--duration", str(args.duration),
+            "--duration", str(duration),
             "--edit-id", args.edit_id,
             "--vo-id", args.vo_id,
             "--out", str(edit_path),
