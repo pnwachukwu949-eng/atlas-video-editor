@@ -260,11 +260,11 @@ Each entry includes:
 ## CLI usage: scripts/revise.py
 
 ```bash
-python scripts/revise.py \
-  --edit examples/hoa_v0.5_edit_spec.json \
-  --revision examples/sample_revision.json \
-  --out examples/hoa_v0.5_revised.json \
-  --report revision_report.json \
+python scripts/revise.py \\
+  --edit examples/hoa_v0.5_edit_spec.json \\
+  --revision examples/sample_revision.json \\
+  --out examples/hoa_v0.5_revised.json \\
+  --report revision_report.json \\
   --log revisions.json
 ```
 
@@ -289,9 +289,9 @@ Revision log appended: revisions.json
 
 ## Profiles & lock defaults
 
-Job profiles (in `examples/profiles/`) set initial lock patterns:
+Job profiles (in `examples/profiles/`) set evidence strictness and pacing. The planner applies locks as follows:
 
-- **investigative.json** — most fields locked by default; evidence_status always locked
+- **investigative.json** — evidence_strictness=strict → planner locks evidence_status; voiceover always locked
 - **explainer.json** — looser; typography and captions unlocked; evidence off
 - **product.json** — minimal locks; motion and timing free; evidence off
 - **social.json** — very loose; short holds and frequent cuts
@@ -307,19 +307,19 @@ Revision behavior is the same for all profiles: locks require explicit `unlock_r
 ### Step 1: Generate initial Edit Spec
 
 ```bash
-python scripts/plan_edit.py \
-  --narration "Narration text..." \
-  --duration 180.0 \
-  --profile examples/profiles/investigative.json \
-  --style examples/style_hoa_v0.22.json \
+python scripts/plan_edit.py \\
+  --narration "Narration text..." \\
+  --duration 180.0 \\
+  --profile examples/profiles/investigative.json \\
+  --dna examples/styles/product_snappy_v1.json \\
   --out edit_spec_v1.json
 ```
 
-Output: `edit_spec_v1.json` with all evidence_status locked (investigative profile default).
+Output: `edit_spec_v1.json` with voiceover locked and evidence_status locked when the profile uses strict/light evidence.
 
 ### Step 2: Review and try to change a locked field
 
-Revision request attempts to change a caption (locked by profile):
+Revision request attempts to change a caption that was locked after approval:
 
 ```json
 {
@@ -340,10 +340,10 @@ Revision request attempts to change a caption (locked by profile):
 Apply:
 
 ```bash
-python scripts/revise.py \
-  --edit edit_spec_v1.json \
-  --revision revision_001.json \
-  --out edit_spec_v1_rev1.json \
+python scripts/revise.py \\
+  --edit edit_spec_v1.json \\
+  --revision revision_001.json \\
+  --out edit_spec_v1_rev1.json \\
   --log revisions.json
 ```
 
@@ -362,7 +362,7 @@ Report shows:
   "rejected": [
     {
       "element": "B2.captions",
-      "reason": "LOCKED (investigative profile default). Pass unlock_required=true + unlock_reason to change.",
+      "reason": "LOCKED (approved caption). Pass unlock_required=true + unlock_reason to change.",
       "suggestion": "Set unlock_required=true and unlock_reason"
     }
   ]
@@ -393,10 +393,10 @@ New revision request with permission:
 Apply:
 
 ```bash
-python scripts/revise.py \
-  --edit edit_spec_v1.json \
-  --revision revision_002.json \
-  --out edit_spec_v1_rev2.json \
+python scripts/revise.py \\
+  --edit edit_spec_v1.json \\
+  --revision revision_002.json \\
+  --out edit_spec_v1_rev2.json \\
   --log revisions.json
 ```
 
@@ -411,48 +411,15 @@ Revised edit written to: edit_spec_v1_rev2.json
 Revision log appended: revisions.json
 ```
 
-Revision log now shows both attempts:
-
-```json
-{
-  "revision_history": [
-    {
-      "revision_id": "rev_001",
-      "timestamp": "...",
-      "status": "rejected",
-      "applied": [],
-      "rejected": [{"element": "B2.captions", "reason": "LOCKED..."}],
-      "unlocks": [],
-      "locks_respected": 1
-    },
-    {
-      "revision_id": "rev_002",
-      "timestamp": "...",
-      "status": "success",
-      "applied": ["B2.captions updated"],
-      "rejected": [],
-      "unlocks": [
-        {
-          "beat_id": "B2",
-          "field": "captions",
-          "reason": "Grammar correction; meaning unchanged"
-        }
-      ],
-      "locks_respected": 0
-    }
-  ]
-}
-```
-
 **Auditable history:** Anyone reviewing the log sees that the caption was locked, a grammar change was requested, and approval was granted with a clear reason. No silent changes.
 
 ---
 
 ## Summary
 
-- **Locks are by default.** Profiles set which fields are locked in the initial Edit Spec.
+- **Voiceover is locked by default.** Profiles mainly set evidence strictness and pacing; field locks are applied by the planner for VO and (when strict) evidence_status.
 - **Revisions must ask permission.** `unlock_required=true` + `unlock_reason` is required to change locked fields.
-- **Fail-closed.** Locked fields reject silently unless explicitly unlocked. No accidental overwrites.
+- **Fail-closed.** Locked fields reject unless explicitly unlocked. No accidental overwrites.
 - **Audit trail.** Every revision (success and rejection) is appended to the log. Immutable history.
 - **Emergency bypass.** `force=true` exists but should only be used for emergencies (legal sign-off, discovered errors).
 - **Voiceover is sacred.** Global voiceover lock requires `force=true` to change; normal unlock path is blocked.
