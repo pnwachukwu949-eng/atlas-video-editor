@@ -4,7 +4,8 @@ Atlas Beat Planner v0.2
 
 Turns narration text + duration + Style DNA + job profile into a generic
 Edit Specification. Genre-agnostic: no HOA-shaped assumptions.
-Supports opening vs body shot pacing when Style DNA provides it.
+
+Optional timed_segments (from AudioListenEngine) override proportional timing.
 """
 
 from __future__ import annotations
@@ -26,12 +27,14 @@ class BeatPlanner:
         edit_id: str = "edit_auto",
         voiceover_asset_id: str = "vo_main",
         asset_pool: Optional[List[str]] = None,
+        timed_segments: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
         """
         Build an Edit Spec from narration.
 
-        Segments are split on sentence boundaries, then merged/split to
-        approximate Style DNA target shot length.
+        If timed_segments is provided (from listen/Whisper/Descript), those
+        start/end times drive the beat grid. Otherwise sentences are weighted
+        proportionally across duration_seconds.
         """
         style_defaults = style_defaults or {}
         job_profile = job_profile or {}
@@ -45,28 +48,52 @@ class BeatPlanner:
         evidence_strict = job_profile.get("evidence_strictness", "off")
         vo_locked = True
 
-        sentences = self._split_sentences(narration_text)
-        if not sentences:
-            sentences = [narration_text.strip() or "Narration"]
+        used_timed = False
+        if timed_segments:
+            raw = []
+            for seg in timed_segments:
+                text = (seg.get("text") or "").strip()
+                if not text:
+                    continue
+                try:
+                    start = float(seg.get("start", 0))
+                    end = float(seg.get("end", start))
+                except (TypeError, ValueError):
+                    continue
+                if end < start:
+                    start, end = end, start
+                raw.append({"text": text, "start": start, "end": end})
+            if raw:
+                used_timed = True
+                duration_seconds = max(duration_seconds, float(raw[-1]["end"]))
+                sentences = [r["text"] for r in raw]
+            else:
+                timed_segments = None
 
-        weights = [max(1, len(s)) for s in sentences]
-        total_w = sum(weights)
-        raw = []
-        t = 0.0
-        for s, w in zip(sentences, weights):
-            dur = duration_seconds * (w / total_w)
-            raw.append({"text": s, "start": t, "end": t + dur})
-            t += dur
-        if raw:
-            raw[-1]["end"] = duration_seconds
+        if not timed_segments or not used_timed:
+            sentences = self._split_sentences(narration_text)
+            if not sentences:
+                sentences = [narration_text.strip() or "Narration"]
+
+            weights = [max(1, len(s)) for s in sentences]
+            total_w = sum(weights)
+            raw = []
+            t = 0.0
+            for s, w in zip(sentences, weights):
+                dur = duration_seconds * (w / total_w)
+                raw.append({"text": s, "start": t, "end": t + dur})
+                t += dur
+            if raw:
+                raw[-1]["end"] = duration_seconds
 
         beats_src = self._fit_to_target_shot(raw, target)
-        beats_src = self._apply_opening_body_pacing(
-            beats_src,
-            duration_seconds,
-            style_defaults.get("opening_shot_seconds"),
-            style_defaults.get("body_avg_shot_seconds"),
-        )
+        if not used_timed:
+            beats_src = self._apply_opening_body_pacing(
+                beats_src,
+                duration_seconds,
+                style_defaults.get("opening_shot_seconds"),
+                style_defaults.get("body_avg_shot_seconds"),
+            )
 
         beats: List[Dict[str, Any]] = []
         for i, seg in enumerate(beats_src):
@@ -138,6 +165,7 @@ class BeatPlanner:
                 "sentence_count": len(sentences),
                 "beat_count": len(beats),
                 "notes": "Generic plan from narration + Style DNA + job profile",
+                "used_timed_segments": used_timed,
             },
         }
         return edit_spec
@@ -149,7 +177,6 @@ class BeatPlanner:
         opening_shot: Any,
         body_avg: Any,
     ) -> List[Dict[str, Any]]:
-        """Bias first segment toward Style DNA opening length; rescale the rest."""
         if not segments or total_duration <= 0:
             return segments
         try:
