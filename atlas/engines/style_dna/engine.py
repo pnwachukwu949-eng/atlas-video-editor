@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Atlas Style DNA Engine v0.1
+Atlas Style DNA Engine v0.2
 
 Extracts editing *grammar* from a reference video (or accepts a manual DNA),
 then applies that grammar as defaults when planning beats for a new job.
@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional
 
 
 class StyleDNAEngine:
-    version = "0.1"
+    version = "0.2"
 
     def extract_from_video(
         self,
@@ -54,6 +54,20 @@ class StyleDNAEngine:
         median = sorted(shots)[len(shots) // 2] if shots else avg
         cuts_per_min = (len(shots) / (duration / 60.0)) if duration and duration > 0 else 0.0
 
+        short = sum(1 for s in shots if s < 2.0)
+        medium = sum(1 for s in shots if 2.0 <= s < 5.0)
+        long = sum(1 for s in shots if s >= 5.0)
+        n = max(1, len(shots))
+        hist = {
+            "short_pct": round(100.0 * short / n, 1),
+            "medium_pct": round(100.0 * medium / n, 1),
+            "long_pct": round(100.0 * long / n, 1),
+        }
+
+        opening_shot = round(shots[0], 2) if shots else None
+        body = shots[1:] if len(shots) > 1 else shots
+        body_avg = round(sum(body) / len(body), 2) if body else round(avg, 2)
+
         if avg < 2.0:
             broll, pacing_motion = "high", "mixed"
         elif avg < 4.5:
@@ -78,6 +92,9 @@ class StyleDNAEngine:
                 "avg_shot_seconds": round(avg, 2),
                 "median_shot_seconds": round(median, 2),
                 "cut_density_per_minute": round(cuts_per_min, 2),
+                "shot_length_histogram": hist,
+                "opening_shot_seconds": opening_shot,
+                "body_avg_shot_seconds": body_avg,
                 "preferred_transition": "hard_cut",
                 "caption_style": {
                     "position": "bottom",
@@ -112,11 +129,15 @@ class StyleDNAEngine:
             "style_id": style_dna.get("style_id"),
             "profile_id": profile.get("profile_id"),
             "target_avg_shot_seconds": round(target_shot, 2),
+            "opening_shot_seconds": g.get("opening_shot_seconds"),
+            "body_avg_shot_seconds": g.get("body_avg_shot_seconds"),
+            "shot_length_histogram": g.get("shot_length_histogram"),
             "preferred_transition": g.get("preferred_transition", "hard_cut"),
             "caption_style": g.get("caption_style", {"position": "bottom", "max_lines": 2}),
             "broll_density": g.get("broll_density", "medium"),
             "motion_default": g.get("motion", "slow_push"),
             "hold_on_key_claims": g.get("hold_on_key_claims", True),
+            "visual_mode_changes": g.get("visual_mode_changes", "rare"),
             "repeat_cap": profile.get("repeat_cap", 2),
             "evidence_strictness": profile.get("evidence_strictness", "off"),
             "prefer_real_footage": profile.get("prefer_real_footage", True),
