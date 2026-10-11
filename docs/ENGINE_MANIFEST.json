@@ -1,29 +1,35 @@
 {
-  "source_of_truth": "local sandbox atlas-video-editor working tree",
-  "note": "Full engine.py files may exceed GitHub connector batch size. CLIs, profiles, schemas, and package __init__ files are on main. Do not rewrite engines — copy verbatim from working tree if missing.",
+  "source_of_truth": "local sandbox + GitHub main",
+  "note": "Engines are on main. Do not rewrite — extend only with minimal patches.",
   "engines": {
     "atlas/engines/constraint_revision/engine.py": {
       "version": "0.2",
       "features": ["unlock_required", "unlock_reason", "fail-closed", "append_revision_log"]
     },
     "atlas/engines/style_dna/engine.py": {
-      "version": "0.1",
-      "features": ["extract_from_video", "apply_to_edit_defaults"]
+      "version": "0.2",
+      "features": ["extract_from_video", "shot_length_histogram", "opening_body_pacing", "apply_to_edit_defaults"]
     },
     "atlas/engines/qc/engine.py": {
-      "version": "0.1",
-      "features": ["repeat_cap", "banned", "brightness", "contact_sheet"]
+      "version": "0.2",
+      "features": ["repeat_cap", "source_plate", "banned", "brightness", "contact_sheet"]
     },
     "atlas/engines/planner/engine.py": {
+      "version": "0.2",
+      "features": ["plan from narration + DNA + profile", "opening_body_pacing"]
+    },
+    "atlas/engines/audio/engine.py": {
       "version": "0.1",
-      "features": ["plan from narration + DNA + profile"]
+      "features": ["listen", "timed_segments", "optional_whisper", "audio_probe"]
     }
   },
   "cli": [
     "scripts/style_dna.py",
     "scripts/plan_edit.py",
+    "scripts/listen.py",
     "scripts/revise.py",
     "scripts/qc_assets.py",
+    "scripts/atlas_pipeline.py",
     "scripts/render.py"
   ],
   "do_not_create": [
