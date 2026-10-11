@@ -3,22 +3,8 @@
 Atlas full pipeline — any job, not HOA-specific.
 
 Paths:
-  A) Narration (+ optional audio listen) → plan → timeline → render → optional QC
+  A) Narration (+ audio listen) → plan (timed segments) → timeline → render → QC
   B) Existing edit spec → timeline → render → optional QC
-
-Examples:
-  python scripts/atlas_pipeline.py \\
-    --narration examples/samples/product_explainer_narration.txt \\
-    --audio assets/vo.mp3 \\
-    --dna examples/styles/product_snappy_v1.json \\
-    --profile examples/profiles/product.json \\
-    --out renders/product_pipeline.mp4
-
-  python scripts/atlas_pipeline.py \\
-    --edit examples/hoa_v0.24_edit_spec.json \\
-    --audio assets/hoa_vo_full_narration.mp3 \\
-    --out renders/hoa_from_edit.mp4 \\
-    --qc --max-uses 2
 """
 
 from __future__ import annotations
@@ -75,7 +61,8 @@ def main() -> None:
     qc_path = work / "qc_report.json"
 
     duration = args.duration
-    if args.narration and duration is None and args.audio:
+    transcript_path = None
+    if args.narration and args.audio:
         transcript_path = work / "transcript.json"
         listen_cmd = [
             sys.executable, str(ROOT / "scripts/listen.py"),
@@ -85,11 +72,13 @@ def main() -> None:
         ]
         run(listen_cmd, "Listen (audio → timed segments)")
         listened = json.loads(transcript_path.read_text())
-        duration = float((listened.get("source") or {}).get("duration_seconds") or 0)
-        if duration <= 0:
+        probed = float((listened.get("source") or {}).get("duration_seconds") or 0)
+        if duration is None:
+            duration = probed
+        if not duration or duration <= 0:
             print("Listen could not determine duration; pass --duration", file=sys.stderr)
             sys.exit(1)
-        print(f"  listened duration: {duration:.3f}s")
+        print(f"  listened duration: {duration:.3f}s  segments: {len(listened.get('segments') or [])}")
 
     if args.narration:
         if duration is None:
@@ -102,6 +91,8 @@ def main() -> None:
             "--vo-id", args.vo_id,
             "--out", str(edit_path),
         ]
+        if transcript_path is not None:
+            plan_cmd += ["--transcript", str(transcript_path)]
         if args.dna:
             plan_cmd += ["--dna", str(args.dna)]
         if args.profile:
