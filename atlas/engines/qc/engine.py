@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """
-Atlas Asset / Edit QC Engine v0.2
+Atlas Asset / Edit QC Engine v0.3
 
-Genre-agnostic checks learned from HOA stress tests:
-- Repeat cap by source plate (same file / plate_id counts even under different asset_ids)
-- Contact sheet of registry assets before timeline use
-- Brightness / contrast risk for text-over-photo
+Genre-agnostic checks:
+- Repeat cap by source plate
+- Contact sheet of registry assets
+- Brightness: dark photos under captions block; designed cards warn only
+- Banned assets fail closed
 """
 
 from __future__ import annotations
@@ -18,7 +19,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 class AssetQCEngine:
-    version = "0.2"
+    version = "0.3"
 
     def __init__(self, assets_root: str = "assets"):
         self.assets_root = Path(assets_root)
@@ -45,14 +46,6 @@ class AssetQCEngine:
         return ids
 
     def _source_plate_key(self, asset_id: str, reg: Dict[str, Any]) -> str:
-        """
-        Identity for repeat counting beyond registry id.
-
-        Priority:
-          1. explicit source_plate / plate_id on the asset entry
-          2. normalized file path (same photo under two ids still counts once)
-          3. asset_id itself
-        """
         entry = (reg.get("assets") or {}).get(asset_id) or {}
         for field in ("source_plate", "plate_id"):
             if entry.get(field):
@@ -73,17 +66,8 @@ class AssetQCEngine:
         count_darkened_as_repeat: bool = True,
         by_source_plate: bool = True,
     ) -> Dict[str, Any]:
-        """
-        Count uses across beats/clips.
-
-        - by_source_plate=True (default): same underlying file or explicit
-          source_plate counts as one plate even if asset_ids differ
-          (e.g. full still vs darkened card plate of the same photo).
-        - by_source_plate=False: count only by asset_id.
-        """
         reg = self.load_registry()
         asset_ids = self._collect_asset_ids(edit_spec_or_timeline)
-
         id_counts: Counter = Counter(asset_ids)
         plate_counts: Counter = Counter()
         plate_members: Dict[str, List[str]] = {}
@@ -91,7 +75,6 @@ class AssetQCEngine:
             key = self._source_plate_key(aid, reg) if by_source_plate else f"id:{aid}"
             plate_counts[key] += 1
             plate_members.setdefault(key, []).append(aid)
-
         primary = plate_counts if by_source_plate else id_counts
         violations = []
         for key, n in sorted(primary.items(), key=lambda x: -x[1]):
@@ -102,7 +85,6 @@ class AssetQCEngine:
                     "max_uses": max_uses,
                     "asset_ids": sorted(set(plate_members.get(key, [key]))),
                 })
-
         return {
             "check": "repeat_cap",
             "max_uses": max_uses,
@@ -132,21 +114,16 @@ class AssetQCEngine:
                 for c in edit_spec_or_timeline.get("tracks", {}).get("video", [])
             ]
         hits = sorted({a for a in used if a and a in banned})
-        return {
-            "check": "banned_assets",
-            "hits": hits,
-            "passed": len(hits) == 0,
-        }
+        return {"check": "banned_assets", "hits": hits, "passed": len(hits) == 0}
 
     def check_brightness(
         self,
         asset_ids: Optional[List[str]] = None,
         dark_threshold: float = 45.0,
+        caption_asset_ids: Optional[List[str]] = None,
+        block_on_dark_photo: bool = True,
     ) -> Dict[str, Any]:
-        """
-        Flag stills whose mean luminance is very low (text-over-photo risk).
-        Requires Pillow. Skips missing files.
-        """
+        """Dark photos under captions block; designed cards/graphics warn only."""
         try:
             from PIL import Image
             import statistics
@@ -156,38 +133,69 @@ class AssetQCEngine:
         reg = self.load_registry()
         assets = reg.get("assets", {})
         ids = asset_ids or list(assets.keys())
+        caption_set = set(caption_asset_ids or [])
         flags = []
         samples = []
+        blocking = []
 
         for aid in ids:
             entry = assets.get(aid)
             if not entry:
                 continue
-            path = self.assets_root / entry.get("path", "")
+            rel = entry.get("path", "")
+            path = self.assets_root / rel
             if not path.exists() or path.suffix.lower() not in (".jpg", ".jpeg", ".png", ".webp"):
                 continue
+            atype = (entry.get("type") or "").lower()
+            low = aid.lower()
+            is_card = (
+                "card" in low
+                or "card" in rel.lower()
+                or "graphic" in atype
+                or "illustration" in atype
+                or "damages" in low
+                or low.endswith("_graphic")
+                or "sought_graphic" in low
+                or "ILLUSTRATIVE" in (entry.get("label") or "").upper()
+            )
             try:
                 im = Image.open(path).convert("L")
                 im.thumbnail((320, 180))
                 pixels = list(im.getdata())
                 mean_y = statistics.mean(pixels) if pixels else 128
-                samples.append({"asset_id": aid, "mean_luminance": round(mean_y, 1)})
+                samples.append({
+                    "asset_id": aid,
+                    "mean_luminance": round(mean_y, 1),
+                    "is_card": is_card,
+                    "has_caption": aid in caption_set,
+                })
                 if mean_y < dark_threshold:
-                    flags.append({
+                    flag = {
                         "asset_id": aid,
                         "mean_luminance": round(mean_y, 1),
                         "threshold": dark_threshold,
                         "risk": "low_contrast_for_text_overlay",
-                    })
+                        "is_card": is_card,
+                        "has_caption": aid in caption_set,
+                        "severity": "warn",
+                    }
+                    if is_card:
+                        flag["risk"] = "dark_designed_card"
+                        flag["severity"] = "warn"
+                    elif block_on_dark_photo and (aid in caption_set or not caption_set):
+                        flag["severity"] = "block"
+                        blocking.append(aid)
+                    flags.append(flag)
             except Exception as e:
-                flags.append({"asset_id": aid, "error": str(e)})
+                flags.append({"asset_id": aid, "error": str(e), "severity": "warn"})
 
         return {
             "check": "brightness",
             "dark_threshold": dark_threshold,
             "flags": flags,
+            "blocking_assets": blocking,
             "samples": samples,
-            "passed": len([f for f in flags if "error" not in f]) == 0,
+            "passed": len(blocking) == 0,
         }
 
     def render_contact_sheet(
@@ -197,10 +205,6 @@ class AssetQCEngine:
         thumb: int = 240,
         only_ids: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
-        """
-        Labeled contact sheet of registry stills — catches mislabeled assets
-        (e.g. 'bench' that was actually a pagoda) before they hit the timeline.
-        """
         try:
             from PIL import Image, ImageDraw, ImageFont
         except ImportError:
@@ -276,22 +280,36 @@ class AssetQCEngine:
         self,
         edit_spec: Dict[str, Any],
         max_uses: int = 2,
+        block_on_dark_photo: bool = True,
     ) -> Dict[str, Any]:
-        """Full pre-render QC bundle for an edit spec."""
-        used_ids = [
-            (b.get("visual") or {}).get("asset_id")
-            for b in edit_spec.get("beats", [])
-            if (b.get("visual") or {}).get("asset_id")
-        ]
+        """Full pre-render QC: repeat + banned + brightness (blocking)."""
+        used_ids = []
+        caption_ids = []
+        for b in edit_spec.get("beats", []):
+            aid = (b.get("visual") or {}).get("asset_id")
+            if not aid:
+                continue
+            used_ids.append(aid)
+            cap = (b.get("captions") or {}).get("text") or (b.get("typography") or {}).get("primary_text")
+            if cap:
+                caption_ids.append(aid)
         report = {
             "engine_version": self.version,
             "timestamp": datetime.now(timezone.utc).isoformat(),
             "repeat_cap": self.check_repeat_cap(edit_spec, max_uses=max_uses),
             "banned": self.check_banned_in_timeline(edit_spec),
-            "brightness": self.check_brightness(asset_ids=list(set(used_ids))),
+            "brightness": self.check_brightness(
+                asset_ids=list(set(used_ids)),
+                caption_asset_ids=list(set(caption_ids)),
+                block_on_dark_photo=block_on_dark_photo,
+            ),
         }
         report["passed"] = all(
             report[k].get("passed", True)
-            for k in ("repeat_cap", "banned")
+            for k in ("repeat_cap", "banned", "brightness")
         )
+        report["warnings"] = [
+            f for f in (report["brightness"].get("flags") or [])
+            if f.get("severity") == "warn"
+        ]
         return report
