@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 """
-Atlas Asset / Edit QC Engine v0.1
+Atlas Asset / Edit QC Engine v0.2
 
 Genre-agnostic checks learned from HOA stress tests:
-- Repeat cap (same source image counts even when darkened under a card)
+- Repeat cap by source plate (same file / plate_id counts even under different asset_ids)
 - Contact sheet of registry assets before timeline use
 - Brightness / contrast risk for text-over-photo
 """
@@ -18,7 +18,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 
 class AssetQCEngine:
-    version = "0.1"
+    version = "0.2"
 
     def __init__(self, assets_root: str = "assets"):
         self.assets_root = Path(assets_root)
@@ -29,40 +29,87 @@ class AssetQCEngine:
             return json.loads(self.registry_path.read_text())
         return {"assets": {}, "banned": {}}
 
+    def _collect_asset_ids(self, edit_spec_or_timeline: Dict[str, Any]) -> List[str]:
+        ids: List[str] = []
+        source = edit_spec_or_timeline
+        if "beats" in source:
+            for beat in source.get("beats", []):
+                aid = (beat.get("visual") or {}).get("asset_id")
+                if aid:
+                    ids.append(aid)
+        elif "tracks" in source:
+            for clip in source.get("tracks", {}).get("video", []):
+                aid = clip.get("asset_id")
+                if aid:
+                    ids.append(aid)
+        return ids
+
+    def _source_plate_key(self, asset_id: str, reg: Dict[str, Any]) -> str:
+        """
+        Identity for repeat counting beyond registry id.
+
+        Priority:
+          1. explicit source_plate / plate_id on the asset entry
+          2. normalized file path (same photo under two ids still counts once)
+          3. asset_id itself
+        """
+        entry = (reg.get("assets") or {}).get(asset_id) or {}
+        for field in ("source_plate", "plate_id"):
+            if entry.get(field):
+                return f"plate:{entry[field]}"
+        path = entry.get("path")
+        if path:
+            try:
+                resolved = str((self.assets_root / path).resolve())
+            except Exception:
+                resolved = str(path).replace("\\", "/").lower()
+            return f"path:{resolved}"
+        return f"id:{asset_id}"
+
     def check_repeat_cap(
         self,
         edit_spec_or_timeline: Dict[str, Any],
         max_uses: int = 2,
         count_darkened_as_repeat: bool = True,
+        by_source_plate: bool = True,
     ) -> Dict[str, Any]:
         """
-        Count asset_id uses across beats/clips.
-        Darkened card plates that reuse the same source still count if the
-        asset_id is the same (identity = registry id, not visual treatment).
+        Count uses across beats/clips.
+
+        - by_source_plate=True (default): same underlying file or explicit
+          source_plate counts as one plate even if asset_ids differ
+          (e.g. full still vs darkened card plate of the same photo).
+        - by_source_plate=False: count only by asset_id.
         """
-        counts: Counter = Counter()
-        source = edit_spec_or_timeline
+        reg = self.load_registry()
+        asset_ids = self._collect_asset_ids(edit_spec_or_timeline)
 
-        if "beats" in source:
-            for beat in source.get("beats", []):
-                aid = (beat.get("visual") or {}).get("asset_id")
-                if aid:
-                    counts[aid] += 1
-        elif "tracks" in source:
-            for clip in source.get("tracks", {}).get("video", []):
-                aid = clip.get("asset_id")
-                if aid:
-                    counts[aid] += 1
+        id_counts: Counter = Counter(asset_ids)
+        plate_counts: Counter = Counter()
+        plate_members: Dict[str, List[str]] = {}
+        for aid in asset_ids:
+            key = self._source_plate_key(aid, reg) if by_source_plate else f"id:{aid}"
+            plate_counts[key] += 1
+            plate_members.setdefault(key, []).append(aid)
 
-        violations = [
-            {"asset_id": aid, "uses": n, "max_uses": max_uses}
-            for aid, n in sorted(counts.items(), key=lambda x: -x[1])
-            if n > max_uses
-        ]
+        primary = plate_counts if by_source_plate else id_counts
+        violations = []
+        for key, n in sorted(primary.items(), key=lambda x: -x[1]):
+            if n > max_uses:
+                violations.append({
+                    "plate": key,
+                    "uses": n,
+                    "max_uses": max_uses,
+                    "asset_ids": sorted(set(plate_members.get(key, [key]))),
+                })
+
         return {
             "check": "repeat_cap",
             "max_uses": max_uses,
-            "counts": dict(counts),
+            "by_source_plate": by_source_plate,
+            "counts_by_asset_id": dict(id_counts),
+            "counts_by_plate": dict(plate_counts),
+            "counts": dict(primary),
             "violations": violations,
             "passed": len(violations) == 0,
             "count_darkened_as_repeat": count_darkened_as_repeat,
