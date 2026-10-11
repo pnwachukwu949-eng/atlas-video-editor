@@ -1,0 +1,31 @@
+{
+  "version": "0.1",
+  "language": "en",
+  "full_text": "In Tennessee, more than 40 homeowners are suing developer Claude Chipp Hayes III. The counterclaim seeks five million dollars. Three communities are at the centre of the case. The retreat at dear lick falls, sunset bluff, and water's edge. These communities were supposed to work in a simple way. The developer builds, and HOA is formed, then control passes to the homeowners. Instead, residents say that never fully happened. They filed suit. Among the allegations, lawn care billing that did not match the work performed, dead and neglected trees that were never addressed, pavilion and amenity issues that left common areas incomplete or unusable. Tax records are also in dispute. Reporting says records attached to a filing showed no payments listed for several years on certain properties. We do not yet have the underlying exhibit, so that claim remains locked until the actual documents can be verified. The dispute is now in court. Taken together, the pattern across the three communities is what the homeowners say the case is really about. If you live in a similar community, the practical step is simple. Check your governing documents, your assessments, and your tax and insurance records. Know what you've signed, know who controls the association, and keep copies of everything.",
+  "segments": [
+    {"start": 0.0, "end": 5.76, "text": "In Tennessee, more than 40 homeowners are suing developer Claude Chipp Hayes III."},
+    {"start": 5.76, "end": 11.28, "text": "The counterclaim seeks five million dollars. Three communities are at the centre of the case."},
+    {"start": 11.28, "end": 16.08, "text": "The retreat at dear lick falls, sunset bluff, and water's edge."},
+    {"start": 16.08, "end": 19.12, "text": "These communities were supposed to work in a simple way."},
+    {"start": 19.12, "end": 24.72, "text": "The developer builds, and HOA is formed, then control passes to the homeowners."},
+    {"start": 24.72, "end": 29.6, "text": "Instead, residents say that never fully happened. They filed suit."},
+    {"start": 29.6, "end": 34.48, "text": "Among the allegations, lawn care billing that did not match the work performed,"},
+    {"start": 34.48, "end": 37.28, "text": "dead and neglected trees that were never addressed,"},
+    {"start": 37.28, "end": 42.08, "text": "pavilion and amenity issues that left common areas incomplete or unusable."},
+    {"start": 42.08, "end": 44.4, "text": "Tax records are also in dispute."},
+    {"start": 44.4, "end": 49.28, "text": "Reporting says records attached to a filing showed no payments listed for several years on"},
+    {"start": 49.28, "end": 53.12, "text": "certain properties. We do not yet have the underlying exhibit,"},
+    {"start": 53.12, "end": 57.2, "text": "so that claim remains locked until the actual documents can be verified."},
+    {"start": 57.2, "end": 59.2, "text": "The dispute is now in court."},
+    {"start": 59.2, "end": 64.96, "text": "Taken together, the pattern across the three communities is what the homeowners say the case is really about."},
+    {"start": 64.96, "end": 68.88, "text": "If you live in a similar community, the practical step is simple."},
+    {"start": 68.88, "end": 74.0, "text": "Check your governing documents, your assessments, and your tax and insurance records."},
+    {"start": 74.0, "end": 79.2, "text": "Know what you've signed, know who controls the association, and keep copies of everything."}
+  ],
+  "source": {
+    "method": "faster_whisper",
+    "audio_path": "assets/hoa_vo_full.mp3",
+    "duration_seconds": 79.272,
+    "listened_at": "2026-10-11T06:26:10.999127+00:00"
+  }
+}
