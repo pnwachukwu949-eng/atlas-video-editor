@@ -7,6 +7,8 @@ Atlas — product entrypoint
   python scripts/atlas.py listen   ...   # audio → timed transcript
   python scripts/atlas.py plan     ...   # narration → edit spec
   python scripts/atlas.py revise   ...   # apply revision (locks honored)
+  python scripts/atlas.py notes    ...   # plain review notes → revision JSON
+  python scripts/atlas.py loop     ...   # notes → revise → timeline → render → review
   python scripts/atlas.py qc       ...   # asset / edit QC
 
 One tool. Editorial job. Not a generator.
@@ -26,6 +28,64 @@ def _run(script: str, argv: list[str]) -> int:
     cmd = [sys.executable, str(ROOT / "scripts" / script), *argv]
     print("→", " ".join(cmd))
     return subprocess.call(cmd, cwd=str(ROOT))
+
+
+def _run_loop(args: argparse.Namespace) -> int:
+    """notes → revision → revise → timeline → render → review."""
+    out = Path(args.out)
+    work = Path(args.workdir) if args.workdir else out.parent / f"{out.stem}_work"
+    work.mkdir(parents=True, exist_ok=True)
+
+    edit_path = Path(args.edit)
+    notes_path = Path(args.notes)
+    rev_req = work / "revision_request.json"
+    revised = work / "edit_spec_revised.json"
+    timeline = work / "timeline.json"
+    report = work / "revision_report.json"
+    review = work / "review.html"
+
+    rc = _run("notes_to_revision.py", [
+        "--notes", str(notes_path),
+        "--out", str(rev_req),
+        "--edit-id", edit_path.stem,
+    ])
+    if rc != 0:
+        return rc
+
+    rev_argv = [
+        "--edit", str(edit_path),
+        "--revision", str(rev_req),
+        "--out", str(revised),
+        "--report", str(report),
+    ]
+    if getattr(args, "log", None):
+        rev_argv += ["--log", str(args.log)]
+    rc = _run("revise.py", rev_argv)
+    if rc != 0:
+        return rc
+
+    rc = _run("build_timeline.py", ["--edit", str(revised), "--out", str(timeline)])
+    if rc != 0:
+        return rc
+
+    render_argv = ["--timeline", str(timeline), "--out", str(out)]
+    if getattr(args, "audio", None):
+        render_argv += ["--audio", str(args.audio)]
+    rc = _run("render.py", render_argv)
+    if rc != 0:
+        return rc
+
+    rc = _run("review_html.py", [
+        "--edit", str(revised),
+        "--video", str(out),
+        "--out", str(review),
+    ])
+    print("\nLoop done.")
+    print("  Revised edit:", revised)
+    print("  Video:       ", out)
+    print("  Review:      ", review)
+    print("  Report:      ", report)
+    return rc
 
 
 def main() -> None:
@@ -55,6 +115,19 @@ def main() -> None:
     p_rev.add_argument("--edit", required=True, help="Edit Spec JSON")
     p_rev.add_argument("--video", default=None, help="Optional rendered MP4 path (for link)")
     p_rev.add_argument("--out", default=None, help="HTML output (default: beside edit)")
+
+    p_notes = sub.add_parser("notes", help="Plain review notes → revision request JSON")
+    p_notes.add_argument("--notes", required=True, help="Notes text file")
+    p_notes.add_argument("--edit-id", default=None)
+    p_notes.add_argument("--out", required=True)
+
+    p_loop = sub.add_parser("loop", help="notes → revise → timeline → render → review")
+    p_loop.add_argument("--edit", required=True, help="Current Edit Spec")
+    p_loop.add_argument("--notes", required=True, help="Review notes text file")
+    p_loop.add_argument("--out", required=True, help="Output MP4")
+    p_loop.add_argument("--audio", default=None)
+    p_loop.add_argument("--workdir", default=None)
+    p_loop.add_argument("--log", default=None, help="Append-only revision log")
 
     for name, help_ in [
         ("listen", "Transcribe / time audio"),
@@ -99,6 +172,15 @@ def main() -> None:
             *(["--video", args.video] if args.video else []),
             *(["--out", args.out] if args.out else []),
         ]))
+
+    if args.cmd == "notes":
+        argv = ["--notes", args.notes, "--out", args.out]
+        if args.edit_id:
+            argv += ["--edit-id", args.edit_id]
+        sys.exit(_run("notes_to_revision.py", argv))
+
+    if args.cmd == "loop":
+        sys.exit(_run_loop(args))
 
     script = {"listen": "listen.py", "plan": "plan_edit.py", "revise": "revise.py", "qc": "qc_assets.py"}[args.cmd]
     passthrough = list(args.args)
