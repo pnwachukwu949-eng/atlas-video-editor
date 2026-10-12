@@ -3,6 +3,7 @@
 Atlas Constraint & Revision Engine v0.2
 Enforces locks on an Edit Specification.
 Locked fields require unlock_required=true (+ unlock_reason) to change.
+Typography updates also sync unlocked caption text.
 """
 
 from __future__ import annotations
@@ -22,13 +23,6 @@ class ConstraintRevisionEngine:
         edit_spec: Dict[str, Any],
         revision_request: Dict[str, Any],
     ) -> Tuple[Dict[str, Any], Dict[str, Any]]:
-        """
-        Apply a revision request to an edit specification.
-        Returns (revised_edit_spec, revision_report)
-
-        Fail-closed: locked fields reject unless instruction has
-        unlock_required=true (and preferably unlock_reason).
-        """
         revised = copy.deepcopy(edit_spec)
         applied: List[str] = []
         rejected: List[Dict[str, str]] = []
@@ -144,6 +138,12 @@ class ConstraintRevisionEngine:
                     else:
                         typography["primary_text"] = new_value
                     applied.append(f"{beat_id}.typography updated")
+                    primary = typography.get("primary_text")
+                    if primary:
+                        captions = beat.setdefault("captions", {})
+                        if not captions.get("locked"):
+                            captions["text"] = primary
+                            applied.append(f"{beat_id}.captions synced from typography")
 
             elif action == "change_caption":
                 captions = beat.setdefault("captions", {})
@@ -252,7 +252,6 @@ class ConstraintRevisionEngine:
         unlock_reason: str,
         force: bool,
     ) -> Tuple[bool, str]:
-        """Return (allowed, reason_if_not)."""
         if not container.get("locked", False):
             return True, ""
         if force:
@@ -285,7 +284,6 @@ class ConstraintRevisionEngine:
 
 
 def append_revision_log(log_path: str, entry: Dict[str, Any]) -> None:
-    """Append one revision result to an append-only JSON log file."""
     path = Path(log_path)
     if path.exists():
         data = json.loads(path.read_text())
