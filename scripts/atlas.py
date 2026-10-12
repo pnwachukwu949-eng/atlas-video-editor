@@ -8,7 +8,7 @@ Atlas — product entrypoint
   python scripts/atlas.py plan     ...   # narration → edit spec
   python scripts/atlas.py revise   ...   # apply revision (locks honored)
   python scripts/atlas.py notes    ...   # plain review notes → revision JSON
-  python scripts/atlas.py loop     ...   # notes → revise → timeline → render → review
+  python scripts/atlas.py loop     ...   # notes → revise → qc → render → review
   python scripts/atlas.py qc       ...   # asset / edit QC
 
 One tool. Editorial job. Not a generator.
@@ -31,7 +31,7 @@ def _run(script: str, argv: list[str]) -> int:
 
 
 def _run_loop(args: argparse.Namespace) -> int:
-    """notes → revision → revise → timeline → render → review."""
+    """notes → revision → revise → QC → timeline → render → review."""
     out = Path(args.out)
     work = Path(args.workdir) if args.workdir else out.parent / f"{out.stem}_work"
     work.mkdir(parents=True, exist_ok=True)
@@ -43,6 +43,7 @@ def _run_loop(args: argparse.Namespace) -> int:
     timeline = work / "timeline.json"
     report = work / "revision_report.json"
     review = work / "review.html"
+    qc_report = work / "qc_report.json"
 
     rc = _run("notes_to_revision.py", [
         "--notes", str(notes_path),
@@ -62,6 +63,15 @@ def _run_loop(args: argparse.Namespace) -> int:
         rev_argv += ["--log", str(args.log)]
     rc = _run("revise.py", rev_argv)
     if rc != 0:
+        return rc
+
+    rc = _run("qc_assets.py", [
+        "edit", "--edit", str(revised),
+        "--max-uses", "3",
+        "--out", str(qc_report),
+    ])
+    if rc != 0:
+        print("QC failed — see", qc_report)
         return rc
 
     rc = _run("build_timeline.py", ["--edit", str(revised), "--out", str(timeline)])
@@ -85,6 +95,7 @@ def _run_loop(args: argparse.Namespace) -> int:
     print("  Video:       ", out)
     print("  Review:      ", review)
     print("  Report:      ", report)
+    print("  QC:          ", qc_report)
     return rc
 
 
@@ -121,7 +132,7 @@ def main() -> None:
     p_notes.add_argument("--edit-id", default=None)
     p_notes.add_argument("--out", required=True)
 
-    p_loop = sub.add_parser("loop", help="notes → revise → timeline → render → review")
+    p_loop = sub.add_parser("loop", help="notes → revise → qc → render → review")
     p_loop.add_argument("--edit", required=True, help="Current Edit Spec")
     p_loop.add_argument("--notes", required=True, help="Review notes text file")
     p_loop.add_argument("--out", required=True, help="Output MP4")
