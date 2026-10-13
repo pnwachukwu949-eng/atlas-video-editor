@@ -2,6 +2,8 @@
 
 Entry point: `python scripts/atlas.py <command>`
 
+Local verification: `python -m pytest tests/ -q` (tests/ is on main).
+
 ## run
 Full plan → fit → queue → rhythm → readiness → QC → render → post-QC
 ```bash
