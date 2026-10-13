@@ -1,22 +1,25 @@
 #!/usr/bin/env python3
 """
-Atlas Beat Planner v0.2
+Atlas Beat Planner v0.3 — keyword-aware asset selection
 
 Turns narration text + duration + Style DNA + job profile into a generic
 Edit Specification. Genre-agnostic: no HOA-shaped assumptions.
 
 Optional timed_segments (from AudioListenEngine) override proportional timing.
+Assets are scored against narration keywords + registry labels; rotation is fallback.
 """
 
 from __future__ import annotations
 
+import json
 import re
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any, Dict, List, Optional
 
 
 class BeatPlanner:
-    version = "0.2"
+    version = "0.3"
 
     def plan(
         self,
@@ -29,13 +32,6 @@ class BeatPlanner:
         asset_pool: Optional[List[str]] = None,
         timed_segments: Optional[List[Dict[str, Any]]] = None,
     ) -> Dict[str, Any]:
-        """
-        Build an Edit Spec from narration.
-
-        If timed_segments is provided (from listen/Whisper/Descript), those
-        start/end times drive the beat grid. Otherwise sentences are weighted
-        proportionally across duration_seconds.
-        """
         style_defaults = style_defaults or {}
         job_profile = job_profile or {}
         asset_pool = asset_pool or []
@@ -96,11 +92,17 @@ class BeatPlanner:
             )
 
         beats: List[Dict[str, Any]] = []
+        used_assets: List[str] = []
+        registry = self._load_registry()
         for i, seg in enumerate(beats_src):
             beat_id = f"B{i+1:02d}"
             text = seg["text"].strip()
             caption = self._caption_line(text, caption_style.get("max_lines", 2))
-            asset_id = asset_pool[i % len(asset_pool)] if asset_pool else None
+            asset_id, asset_score, asset_reason = self._pick_asset(
+                text, asset_pool, used_assets=used_assets, registry=registry
+            )
+            if asset_id:
+                used_assets.append(asset_id)
 
             beat: Dict[str, Any] = {
                 "beat_id": beat_id,
@@ -112,6 +114,10 @@ class BeatPlanner:
                     "type": "contextual_photo" if asset_id else "placeholder",
                     "label": "",
                     "locked": False,
+                    "selection": {
+                        "score": asset_score,
+                        "reason": asset_reason,
+                    },
                 },
                 "typography": {
                     "primary_text": caption,
@@ -144,7 +150,11 @@ class BeatPlanner:
 
         edit_spec = {
             "edit_id": edit_id,
-            "version": "0.2-planner",
+            "style_av": {
+                "picture_lag_seconds": float(style_defaults.get("picture_lag_seconds") or 0.0),
+                "craft_note": "picture_lag>0 J-cut feel; <0 L-cut feel",
+            },
+            "version": "0.3-planner",
             "profile_id": job_profile.get("profile_id"),
             "style_id": style_defaults.get("style_id"),
             "source_voiceover": {
@@ -164,7 +174,7 @@ class BeatPlanner:
                 "target_avg_shot_seconds": target,
                 "sentence_count": len(sentences),
                 "beat_count": len(beats),
-                "notes": "Generic plan from narration + Style DNA + job profile",
+                "notes": "Generic plan from narration + Style DNA + keyword asset scoring",
                 "used_timed_segments": used_timed,
             },
         }
@@ -264,3 +274,97 @@ class BeatPlanner:
         if len(words) > 12:
             line += "…"
         return line
+
+    def _load_registry(self) -> Dict[str, Any]:
+        path = Path("assets/registry.json")
+        if path.exists():
+            try:
+                return json.loads(path.read_text())
+            except Exception:
+                return {}
+        return {}
+
+    def _tokens(self, text: str) -> set:
+        stop = {
+            "the", "a", "an", "and", "or", "to", "of", "in", "on", "for", "is", "are",
+            "this", "that", "with", "as", "by", "from", "it", "be", "was", "were",
+            "your", "you", "we", "they", "their", "our", "at", "into", "about",
+        }
+        words = re.findall(r"[a-z0-9]+", (text or "").lower())
+        return {w for w in words if len(w) > 2 and w not in stop}
+
+    def _asset_text(self, asset_id: str, registry: Dict[str, Any]) -> str:
+        entry = (registry.get("assets") or {}).get(asset_id) or {}
+        parts = [
+            asset_id.replace("_", " "),
+            entry.get("label") or "",
+            entry.get("type") or "",
+            " ".join(entry.get("tags") or []),
+            entry.get("description") or "",
+        ]
+        return " ".join(str(p) for p in parts if p)
+
+    def _score_asset(
+        self,
+        narration: str,
+        asset_id: str,
+        registry: Dict[str, Any],
+        recent: List[str],
+    ) -> float:
+        narr = self._tokens(narration)
+        asset = self._tokens(self._asset_text(asset_id, registry))
+        if not narr:
+            return 0.0
+        overlap = narr & asset
+        score = float(len(overlap) * 2.0)
+        for n in narr:
+            for a in asset:
+                if n.startswith(a) or a.startswith(n):
+                    score += 0.5
+        hints = {
+            "house": ("house", "home", "residential", "suburban", "cottage"),
+            "home": ("house", "home", "residential"),
+            "community": ("community", "neighborhood", "suburb", "aerial", "street"),
+            "lawn": ("lawn", "mower", "grass", "yard"),
+            "court": ("court", "courthouse", "legal", "law"),
+            "tax": ("tax", "ledger", "money", "document", "record"),
+            "document": ("document", "paper", "filing", "checklist", "card"),
+            "map": ("map", "community", "location"),
+            "editor": ("checklist", "card", "document"),
+            "video": ("house", "suburban", "community"),
+        }
+        blob = self._asset_text(asset_id, registry).lower()
+        for word in narr:
+            for key, keys in hints.items():
+                if word.startswith(key) or key.startswith(word):
+                    if any(k in blob for k in keys):
+                        score += 1.5
+        if recent and asset_id == recent[-1]:
+            score -= 3.0
+        elif asset_id in recent[-3:]:
+            score -= 1.5
+        return score
+
+    def _pick_asset(
+        self,
+        narration: str,
+        pool: List[str],
+        used_assets: Optional[List[str]] = None,
+        registry: Optional[Dict[str, Any]] = None,
+    ):
+        if not pool:
+            return None, 0.0, "empty_pool"
+        registry = registry or {}
+        used_assets = used_assets or []
+        scored = [
+            (aid, self._score_asset(narration, aid, registry, used_assets))
+            for aid in pool
+        ]
+        scored.sort(key=lambda x: (-x[1], pool.index(x[0])))
+        best_id, best_score = scored[0]
+        if best_score <= 0:
+            for aid in pool:
+                if aid not in used_assets:
+                    return aid, 0.0, "rotation_unused"
+            return pool[len(used_assets) % len(pool)], 0.0, "rotation"
+        return best_id, round(best_score, 2), f"keyword_score={best_score:.1f}"
