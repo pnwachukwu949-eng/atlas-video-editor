@@ -1,40 +1,50 @@
 {
-  "source_of_truth": "local sandbox + GitHub main",
-  "note": "Engines are on main. Do not rewrite — extend only with minimal patches.",
+  "product": "Atlas Video Editor",
+  "updated": "2026-10-13",
   "engines": {
-    "atlas/engines/constraint_revision/engine.py": {
-      "version": "0.2",
-      "features": ["unlock_required", "unlock_reason", "fail-closed", "append_revision_log"]
+    "planner": {
+      "path": "atlas/engines/planner/engine.py",
+      "version": "0.6"
     },
-    "atlas/engines/style_dna/engine.py": {
-      "version": "0.2",
-      "features": ["extract_from_video", "shot_length_histogram", "opening_body_pacing", "apply_to_edit_defaults"]
+    "asset_fit": {
+      "path": "atlas/engines/asset_fit/engine.py",
+      "version": "0.1"
     },
-    "atlas/engines/qc/engine.py": {
-      "version": "0.2",
-      "features": ["repeat_cap", "source_plate", "banned", "brightness", "contact_sheet"]
+    "asset_queue": {
+      "path": "atlas/engines/asset_fit/queue.py",
+      "version": "0.1"
     },
-    "atlas/engines/planner/engine.py": {
-      "version": "0.2",
-      "features": ["plan from narration + DNA + profile", "opening_body_pacing"]
+    "rhythm": {
+      "path": "atlas/engines/rhythm/engine.py",
+      "version": "0.3"
     },
-    "atlas/engines/audio/engine.py": {
-      "version": "0.1",
-      "features": ["listen", "timed_segments", "optional_whisper", "audio_probe"]
+    "provenance": {
+      "path": "atlas/engines/provenance/engine.py",
+      "version": "0.1"
+    },
+    "post_render_qc": {
+      "path": "atlas/engines/qc/post_render.py",
+      "version": "0.1"
+    },
+    "readiness": {
+      "path": "atlas/engines/readiness/engine.py",
+      "version": "0.1"
+    },
+    "constraint_revision": {
+      "path": "atlas/engines/constraint_revision/engine.py",
+      "version": "0.2"
+    },
+    "revision_notes": {
+      "path": "atlas/engines/revision_notes/engine.py",
+      "version": "0.2"
+    },
+    "style_dna": {
+      "path": "atlas/engines/style_dna/engine.py",
+      "version": "0.2"
+    },
+    "audio_listen": {
+      "path": "atlas/engines/audio/engine.py",
+      "version": "0.1"
     }
-  },
-  "cli": [
-    "scripts/style_dna.py",
-    "scripts/plan_edit.py",
-    "scripts/listen.py",
-    "scripts/revise.py",
-    "scripts/qc_assets.py",
-    "scripts/atlas_pipeline.py",
-    "scripts/render.py"
-  ],
-  "do_not_create": [
-    "atlas/acquisition/style_extractor.py",
-    "atlas/core/profiles.py",
-    "atlas/config/profiles/"
-  ]
+  }
 }
