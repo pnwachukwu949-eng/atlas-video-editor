@@ -1,20 +1,17 @@
-# Atlas status — demo v1 (2026-10-13)
+# Atlas status — 2026-10-14
 
-## What ran (actually executed)
+## Latest demo: v6
+- Video: `renders/atlas_demo_v6.mp4`
+- Readiness **88 green** · Fit **USE 8 / GAP 0** · Post-QC **PASS**
+- Product explainer (28s) end-to-end: plan → fit → queue → rhythm → readiness → QC → render → post-QC
 
-Full pipeline on product explainer narration (28s):
+## Tests
+`python -m pytest tests/ -q` → **15 passed** (local)
 
-plan → fit → queue → rhythm → readiness → asset QC → timeline → render → post-render QC → review HTML
+## GitHub sync (main)
+On remote: tests, CLI docs, rhythm engine, readiness, provenance engine, QC scripts.
+Still pushing in batches: asset_fit engine/queue, post_render, planner 0.8.
 
-| Gate | Result |
-|------|--------|
-| Readiness | **17 red** — gaps honest |
-| Fit | USE 2 / GAP 5 |
-| Post-render QC | **PASS** |
-| Consecutive stills | 0 |
-
-## Demo v2–v5
-
-Illustrative product cards closed gaps. Latest readiness **85–87 green**, GAP 0–1, post-QC PASS.
-
-Artifacts under `renders/atlas_demo_v*`. Product identity unchanged: editorial engine, not a generator.
+## Product identity
+General editorial engine (profiles + Style DNA + constraints). HOA was a test project, not the product limit.
+Evidence fail-closed stays strict for investigative profiles only.

@@ -1,14 +1,14 @@
 {
   "product": "Atlas Video Editor",
-  "updated": "2026-10-13",
+  "updated": "2026-10-14",
   "engines": {
     "planner": {
       "path": "atlas/engines/planner/engine.py",
-      "version": "0.6"
+      "version": "0.8"
     },
     "asset_fit": {
       "path": "atlas/engines/asset_fit/engine.py",
-      "version": "0.1"
+      "version": "0.3"
     },
     "asset_queue": {
       "path": "atlas/engines/asset_fit/queue.py",
@@ -46,5 +46,9 @@
       "path": "atlas/engines/audio/engine.py",
       "version": "0.1"
     }
+  },
+  "github_sync": {
+    "note": "Working tree is source of truth. Push engines in batches when GitHub lags.",
+    "demo": "renders/atlas_demo_v6.mp4 readiness 88 green"
   }
 }
