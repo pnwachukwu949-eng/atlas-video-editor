@@ -1,23 +1,28 @@
 # Atlas status — 2026-10-14
 
-## Three-genre proof (same pipeline)
+## M1 complete: Motion Engine v0.1
 
-| Demo | Profile | DNA | Avg shot | Result |
-|------|---------|-----|----------|--------|
-| Product | product | product_snappy_v1 | ~3.5s | `atlas_demo_v10.mp4` · 94 green |
-| Explainer | explainer | explainer_calm_v1 | ~5.0s | `atlas_explainer_v1.mp4` · 88 green |
-| **Social** | social | social_snappy_v1 | **~2.3s** | `atlas_social_v1.mp4` · **94 green** |
+Camera-2D Ken-Burns foundation (not a full VFX stack).
 
-Only DNA + profile + asset pool change. Core engines stay genre-agnostic.
+| Piece | Location |
+|-------|----------|
+| Presets | `atlas/engines/motion/presets.py` |
+| Engine | `atlas/engines/motion/engine.py` |
+| Tests | `tests/test_motion_presets.py` (10 passed) |
+| Planner | emits full Motion Spec per beat |
+| Renderer | `build_ffmpeg_zoompan(params)` |
 
-## Social v1 specifics
-- 14s · 6 beats · USE 6 / GAP 0 · Post-QC PASS
-- Centered captions · dense cuts · motion alternation
-- DNA: `examples/styles/social_snappy_v1.json`
-- Narration: `examples/samples/social_hook_narration.txt`
+### Presets
+`kb_static` · `kb_slow_push` · `kb_pull_back` · `kb_pan_right` · `kb_pan_left` · `kb_subtle_hold`
 
-## Already solid
-- Pillow text overlays (no drawtext dependency)
-- Contact sheet on `--qc`
-- Neighbor-aware motion variety
-- Style DNA → timeline metadata (align, motion, lag)
+### Story binding
+- establish → slow push
+- prove → subtle hold
+- release / hold → static
+- illustrate → Style DNA default + neighbor anti-repeat
+
+### Demo
+`renders/atlas_social_v2.mp4` — readiness 94 · Post-QC PASS · Motion Spec on every beat
+
+### Not in M1 (deferred)
+Transitions, text animation, speed ramps, masks, 3D, particles
