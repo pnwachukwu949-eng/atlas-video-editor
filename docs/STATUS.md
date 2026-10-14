@@ -1,17 +1,16 @@
-# Atlas status — 2026-10-14
+# Atlas status — 2026-10-14 (later)
 
-## Latest demo: v6
-- Video: `renders/atlas_demo_v6.mp4`
-- Readiness **88 green** · Fit **USE 8 / GAP 0** · Post-QC **PASS**
-- Product explainer (28s) end-to-end: plan → fit → queue → rhythm → readiness → QC → render → post-QC
+## Viewer feedback applied
+- Upper typography moved **right** (`overlay_align=right`)
+- Demo v8: same cut as v7, right-side labels
+- Style DNA + timeline metadata now carry `caption_style.overlay_align`
+  so left/center/right is a **grammar choice**, not a hard-coded layout
 
-## Tests
-`python -m pytest tests/ -q` → **15 passed** (local)
+## Latest demos
+- `renders/atlas_demo_v8.mp4` — product explainer, readiness 94
+- GitHub: asset_fit, queue, post_render, provenance, rhythm, readiness on main
 
-## GitHub sync (main)
-On remote: tests, CLI docs, rhythm engine, readiness, provenance engine, QC scripts.
-Still pushing in batches: asset_fit engine/queue, post_render, planner 0.8.
-
-## Product identity
-General editorial engine (profiles + Style DNA + constraints). HOA was a test project, not the product limit.
-Evidence fail-closed stays strict for investigative profiles only.
+## Next build focus
+- Style DNA controls more surface decisions (align, motion, caption density)
+- Contact sheet before asset use
+- Optional real VO + J-cut on product demos when audio supplied

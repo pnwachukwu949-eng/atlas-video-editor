@@ -13,7 +13,8 @@
     "caption_style": {
       "position": "bottom",
       "max_lines": 2,
-      "emphasis": "key_nouns"
+      "emphasis": "key_nouns",
+      "overlay_align": "right"
     },
     "broll_density": "medium",
     "hold_on_key_claims": false,

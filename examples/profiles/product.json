@@ -7,5 +7,11 @@
   "allow_illustrative_graphics": true,
   "prefer_real_footage": true,
   "pacing": "dense",
-  "notes": "Faster cuts allowed. No evidence gates. Still respect locks and bans."
+  "notes": "Faster cuts allowed. No evidence gates. Still respect locks and bans.",
+  "picture_lag_seconds": 0.2,
+  "caption_max_chars": 75,
+  "caption_max_lines": 2,
+  "caption_style": {
+    "overlay_align": "right"
+  }
 }
