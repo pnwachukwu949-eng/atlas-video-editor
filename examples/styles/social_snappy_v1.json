@@ -1,0 +1,29 @@
+{
+  "style_id": "social_snappy_v1",
+  "version": "0.1",
+  "source": {
+    "method": "manual",
+    "notes": "Short-form social: fast cuts, punchy captions"
+  },
+  "grammar": {
+    "avg_shot_seconds": 2.4,
+    "median_shot_seconds": 2.2,
+    "cut_density_per_minute": 25.0,
+    "opening_shot_seconds": 1.8,
+    "body_avg_shot_seconds": 2.4,
+    "preferred_transition": "hard_cut",
+    "caption_style": {
+      "position": "bottom",
+      "max_lines": 2,
+      "max_chars": 48,
+      "emphasis": "key_nouns",
+      "overlay_align": "center"
+    },
+    "broll_density": "high",
+    "hold_on_key_claims": false,
+    "motion": "pan_right",
+    "visual_mode_changes": "frequent"
+  },
+  "picture_lag_seconds": 0.12,
+  "notes": "Dense social grammar — short holds, centered captions"
+}

@@ -1,0 +1,5 @@
+Stop editing frame by frame.
+Atlas plans the cut from your script.
+It picks the visuals that match each line.
+You lock what works. Change only what you ask.
+First cut in minutes. Not days.

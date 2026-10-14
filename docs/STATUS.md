@@ -1,16 +1,23 @@
-# Atlas status — 2026-10-14 (later)
+# Atlas status — 2026-10-14
 
-## Viewer feedback applied
-- Upper typography moved **right** (`overlay_align=right`)
-- Demo v8: same cut as v7, right-side labels
-- Style DNA + timeline metadata now carry `caption_style.overlay_align`
-  so left/center/right is a **grammar choice**, not a hard-coded layout
+## Three-genre proof (same pipeline)
 
-## Latest demos
-- `renders/atlas_demo_v8.mp4` — product explainer, readiness 94
-- GitHub: asset_fit, queue, post_render, provenance, rhythm, readiness on main
+| Demo | Profile | DNA | Avg shot | Result |
+|------|---------|-----|----------|--------|
+| Product | product | product_snappy_v1 | ~3.5s | `atlas_demo_v10.mp4` · 94 green |
+| Explainer | explainer | explainer_calm_v1 | ~5.0s | `atlas_explainer_v1.mp4` · 88 green |
+| **Social** | social | social_snappy_v1 | **~2.3s** | `atlas_social_v1.mp4` · **94 green** |
 
-## Next build focus
-- Style DNA controls more surface decisions (align, motion, caption density)
-- Contact sheet before asset use
-- Optional real VO + J-cut on product demos when audio supplied
+Only DNA + profile + asset pool change. Core engines stay genre-agnostic.
+
+## Social v1 specifics
+- 14s · 6 beats · USE 6 / GAP 0 · Post-QC PASS
+- Centered captions · dense cuts · motion alternation
+- DNA: `examples/styles/social_snappy_v1.json`
+- Narration: `examples/samples/social_hook_narration.txt`
+
+## Already solid
+- Pillow text overlays (no drawtext dependency)
+- Contact sheet on `--qc`
+- Neighbor-aware motion variety
+- Style DNA → timeline metadata (align, motion, lag)
