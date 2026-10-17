@@ -1,54 +1,33 @@
 {
-  "product": "Atlas Video Editor",
-  "updated": "2026-10-14",
+  "updated": "2026-10-15",
   "engines": {
-    "planner": {
-      "path": "atlas/engines/planner/engine.py",
-      "version": "0.8"
-    },
-    "asset_fit": {
-      "path": "atlas/engines/asset_fit/engine.py",
-      "version": "0.3"
-    },
     "asset_queue": {
       "path": "atlas/engines/asset_fit/queue.py",
-      "version": "0.1"
-    },
-    "rhythm": {
-      "path": "atlas/engines/rhythm/engine.py",
-      "version": "0.3"
-    },
-    "provenance": {
-      "path": "atlas/engines/provenance/engine.py",
-      "version": "0.1"
-    },
-    "post_render_qc": {
-      "path": "atlas/engines/qc/post_render.py",
-      "version": "0.1"
-    },
-    "readiness": {
-      "path": "atlas/engines/readiness/engine.py",
-      "version": "0.1"
+      "version": "0.2"
     },
     "constraint_revision": {
       "path": "atlas/engines/constraint_revision/engine.py",
-      "version": "0.2"
-    },
-    "revision_notes": {
-      "path": "atlas/engines/revision_notes/engine.py",
-      "version": "0.2"
+      "version": "0.3"
     },
     "style_dna": {
       "path": "atlas/engines/style_dna/engine.py",
-      "version": "0.2"
+      "version": "0.3"
     },
-    "audio_listen": {
-      "path": "atlas/engines/audio/engine.py",
+    "motion": {
+      "path": "atlas/engines/motion/engine.py",
       "version": "0.1"
+    },
+    "review_loop": {
+      "path": "scripts/review_loop.py",
+      "version": "0.1"
+    },
+    "fill_queue": {
+      "path": "scripts/fill_queue.py",
+      "version": "0.2"
     }
   },
   "github_sync": {
-    "note": "Working tree is source of truth. Push engines in batches when GitHub lags.",
-    "demo": "renders/atlas_demo_v6.mp4 readiness 88 green"
+    "note": "Working tree is source of truth.",
+    "demo": "renders/atlas_video_broll_stagger.mp4"
   }
 }

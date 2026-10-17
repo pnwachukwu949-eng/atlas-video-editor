@@ -1,28 +1,21 @@
-# Atlas status — 2026-10-14
+# Atlas status — 2026-10-17
 
-## M1 complete: Motion Engine v0.1
+## Music bed v0.2 — sidechain duck
+- Default: music **ducks under speech** (ffmpeg `sidechaincompress`)
+- `--no-duck` → flat volume pad (v0.1 behavior)
+- `--music` / `--soft-bed` / `--music-volume` unchanged
 
-Camera-2D Ken-Burns foundation (not a full VFX stack).
+```bash
+python scripts/atlas_pipeline.py \
+  --narration script.txt --audio vo.mp3 \
+  --music bed.mp3 --music-volume 0.15 \
+  --out renders/out.mp4 --package packages/out_v1
 
-| Piece | Location |
-|-------|----------|
-| Presets | `atlas/engines/motion/presets.py` |
-| Engine | `atlas/engines/motion/engine.py` |
-| Tests | `tests/test_motion_presets.py` (10 passed) |
-| Planner | emits full Motion Spec per beat |
-| Renderer | `build_ffmpeg_zoompan(params)` |
+# demo without a track:
+python scripts/atlas_pipeline.py ... --soft-bed --music-volume 0.18
+```
 
-### Presets
-`kb_static` · `kb_slow_push` · `kb_pull_back` · `kb_pan_right` · `kb_pan_left` · `kb_subtle_hold`
+Proof: `renders/atlas_duck_bed.mp4` · `packages/atlas_duck_bed/`
 
-### Story binding
-- establish → slow push
-- prove → subtle hold
-- release / hold → static
-- illustrate → Style DNA default + neighbor anti-repeat
-
-### Demo
-`renders/atlas_social_v2.mp4` — readiness 94 · Post-QC PASS · Motion Spec on every beat
-
-### Not in M1 (deferred)
-Transitions, text animation, speed ramps, masks, 3D, particles
+## Full spine
+reference → DNA → plan → fit → fill → stagger → motion → **ducked music** → package → QC
