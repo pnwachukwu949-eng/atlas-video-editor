@@ -1,0 +1,39 @@
+{
+  "version": "0.1",
+  "default_voice": "atlas_calm",
+  "voices": {
+    "atlas_calm": {
+      "id": "atlas_calm",
+      "label": "Atlas Calm (explainer)",
+      "lang": "en",
+      "style": "calm educational",
+      "edge_voice": "en-US-JennyNeural",
+      "gtts_tld": "com",
+      "notes": "Default for explainer / educational"
+    },
+    "atlas_product": {
+      "id": "atlas_product",
+      "label": "Atlas Product (snappy)",
+      "lang": "en",
+      "style": "clear product",
+      "edge_voice": "en-US-GuyNeural",
+      "gtts_tld": "com",
+      "notes": "Default for product / marketing"
+    },
+    "atlas_investigative": {
+      "id": "atlas_investigative",
+      "label": "Atlas Investigative (serious)",
+      "lang": "en",
+      "style": "measured serious",
+      "edge_voice": "en-US-ChristopherNeural",
+      "gtts_tld": "co.uk",
+      "notes": "Default for investigative"
+    }
+  },
+  "profile_defaults": {
+    "explainer": "atlas_calm",
+    "product": "atlas_product",
+    "investigative": "atlas_investigative",
+    "social": "atlas_product"
+  }
+}
