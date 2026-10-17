@@ -1,0 +1,41 @@
+{
+  "version": "0.1",
+  "beds": {
+    "product_soft_pad": {
+      "id": "product_soft_pad",
+      "title": "Product soft pad",
+      "mood": ["product", "calm", "tech"],
+      "source": "generated",
+      "license": "Atlas-generated placeholder — replace with licensed music for publish",
+      "generator": "soft_pad",
+      "path": null
+    },
+    "explainer_warm_pad": {
+      "id": "explainer_warm_pad",
+      "title": "Explainer warm pad",
+      "mood": ["explainer", "warm", "soft"],
+      "source": "generated",
+      "license": "Atlas-generated placeholder — replace with licensed music for publish",
+      "generator": "warm_pad",
+      "path": null
+    },
+    "investigative_low_drone": {
+      "id": "investigative_low_drone",
+      "title": "Investigative low drone",
+      "mood": ["investigative", "tense", "low"],
+      "source": "generated",
+      "license": "Atlas-generated placeholder — replace with licensed music for publish",
+      "generator": "low_drone",
+      "path": null
+    },
+    "soft_pink": {
+      "id": "soft_pink",
+      "title": "Soft pink noise (legacy)",
+      "mood": ["neutral"],
+      "source": "generated",
+      "license": "Atlas-generated placeholder",
+      "generator": "pink",
+      "path": null
+    }
+  }
+}
