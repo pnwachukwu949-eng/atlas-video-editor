@@ -1,4 +1,4 @@
-"""PhotoFetcher domain-aware search — refuse residential for software queries."""
+"""PhotoFetcher domain-aware search — workspace for software, place for place."""
 from __future__ import annotations
 import sys
 from pathlib import Path
@@ -10,13 +10,14 @@ from atlas.acquisition.photo_fetcher import PhotoFetcher
 from atlas.acquisition.domains import is_software_query, domain_mismatch_penalty
 
 
-def test_software_query_returns_no_suburban_hits():
+def test_software_query_returns_workspace_not_suburban():
     f = PhotoFetcher(assets_root=str(ROOT / "assets"))
-    hits = f.search("video timeline editing software screen")
+    hits = f.search("video timeline editing software screen workspace")
+    assert hits, "expected workspace catalog hits for software query"
     for h in hits:
         terms = " ".join(h.get("query_terms") or []).lower()
-        assert "suburban" not in terms or "software" in terms
-    assert hits == []
+        assert "suburban" not in terms
+        assert any(t in terms for t in ("laptop", "desk", "workspace", "office", "computer", "editor"))
 
 
 def test_place_query_still_returns_catalog():
@@ -24,13 +25,15 @@ def test_place_query_still_returns_catalog():
     hits = f.search("suburban neighborhood houses")
     assert len(hits) >= 1
     assert hits[0]["match_score"] > 0
+    assert "suburban" in " ".join(hits[0].get("query_terms") or []).lower() or "house" in hits[0]["title"].lower()
 
 
-def test_acquire_software_fails_closed():
+def test_software_does_not_prefer_residential():
     f = PhotoFetcher(assets_root=str(ROOT / "assets"))
-    r = f.search_and_acquire("editor timeline software screen workspace")
-    assert r["status"] == "NOT_FOUND"
-    assert "refusing residential" in r.get("reason", "").lower() or "domain" in r.get("reason", "").lower()
+    hits = f.search("editor timeline software screen")
+    for h in hits:
+        blob = " ".join(h.get("query_terms") or []) + " " + h.get("title", "")
+        assert "suburban" not in blob.lower()
 
 
 def test_domain_helpers():
