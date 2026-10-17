@@ -1,39 +1,40 @@
 {
-  "version": "0.1",
-  "default_voice": "atlas_calm",
+  "version": "0.2",
+  "default_voice": "atlas_default",
+  "notes": "atlas_default is the exact Grok Voice API default (voice param omitted) used for explainer_rain_vo.mp3. Do not swap to a different id for brand VO unless the user explicitly asks.",
+  "reference_sample": "assets/explainer_rain_vo.mp3",
+  "profile_defaults": {
+    "explainer": "atlas_default",
+    "product": "atlas_default",
+    "investigative": "atlas_default",
+    "social": "atlas_default"
+  },
   "voices": {
+    "atlas_default": {
+      "id": "atlas_default",
+      "display_name": "Atlas (default — rain explainer voice)",
+      "lang": "en",
+      "grok_voice_id": null,
+      "omit_voice_param": true,
+      "edge_voice": "en-US-GuyNeural",
+      "gtts_tld": "com",
+      "locked": true,
+      "notes": "Matches explainer_rain_vo synthesis (API default). Locked brand voice."
+    },
     "atlas_calm": {
       "id": "atlas_calm",
-      "label": "Atlas Calm (explainer)",
-      "lang": "en",
-      "style": "calm educational",
-      "edge_voice": "en-US-JennyNeural",
-      "gtts_tld": "com",
-      "notes": "Default for explainer / educational"
+      "alias_of": "atlas_default",
+      "locked": true
     },
     "atlas_product": {
       "id": "atlas_product",
-      "label": "Atlas Product (snappy)",
-      "lang": "en",
-      "style": "clear product",
-      "edge_voice": "en-US-GuyNeural",
-      "gtts_tld": "com",
-      "notes": "Default for product / marketing"
+      "alias_of": "atlas_default",
+      "locked": true
     },
     "atlas_investigative": {
       "id": "atlas_investigative",
-      "label": "Atlas Investigative (serious)",
-      "lang": "en",
-      "style": "measured serious",
-      "edge_voice": "en-US-ChristopherNeural",
-      "gtts_tld": "co.uk",
-      "notes": "Default for investigative"
+      "alias_of": "atlas_default",
+      "locked": true
     }
-  },
-  "profile_defaults": {
-    "explainer": "atlas_calm",
-    "product": "atlas_product",
-    "investigative": "atlas_investigative",
-    "social": "atlas_product"
   }
 }
