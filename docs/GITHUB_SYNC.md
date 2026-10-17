@@ -1,16 +1,17 @@
 # GitHub sync note (2026-10-17)
 
-## Pushed to main
-- scripts/render.py — sidechain music duck, soft-bed, VO mux
-- docs/STATUS.md, docs/CLI.md, docs/ENGINE_MANIFEST.json
-- tests/test_video_stagger.py, tests/test_fill_registry_video.py
+## On main
+- `scripts/render.py` — sidechain music duck, soft-bed (plain source)
+- `scripts/fill_queue.py` — registry video/still fill (zlib-packed; expands at import)
+- docs: STATUS, CLI, ENGINE_MANIFEST, this file
+- tests: video stagger, fill registry video
 
-## Still local-first (working tree is source of truth)
-These are newer on the sandbox than GitHub; push next session or via desktop:
-- scripts/atlas_pipeline.py — --package, --music, --fill-gaps, --soft-bed
-- scripts/fill_queue.py — registry video preference before download
-- atlas/rendering/bridge.py — video in-point stagger
-- atlas/rendering/media_renderer.py — video loop + -ss in-points
-- atlas/engines/asset_fit/queue.py — fill sets contextual_video type from registry
+## Still pushing / local-first
+- `scripts/atlas_pipeline.py`
+- `atlas/rendering/bridge.py` (video in-point stagger)
+- `atlas/rendering/media_renderer.py`
+- `atlas/engines/asset_fit/queue.py` (contextual_video on fill)
+
+Working tree remains source of truth for plain (readable) source.
 
 Repo: https://github.com/pnwachukwu949-eng/atlas-video-editor
