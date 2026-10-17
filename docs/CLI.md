@@ -2,61 +2,58 @@
 
 Entry point: `python scripts/atlas.py <command>`
 
-Local verification: `python -m pytest tests/ -q` (tests/ is on main).
+## run — full editorial pipeline
 
-## run
-Full plan → fit → queue → rhythm → readiness → QC → render → post-QC
 ```bash
 python scripts/atlas.py run \
-  --narration examples/samples/product_explainer_narration.txt \
-  --duration 28 \
+  --narration script.txt \
+  --audio voice.mp3 \
   --dna examples/styles/product_snappy_v1.json \
   --profile examples/profiles/product.json \
-  --assets product_hook_card,product_script_card \
-  --edit-id demo --out renders/demo.mp4 --qc --post-qc
+  --assets asset_a,asset_b \
+  --out renders/out.mp4 \
+  --fill-gaps --package packages/out_v1
 ```
 
-## loop
-Review notes → revision → re-render cycle (see `atlas.py loop -h`).
+Optional:
+- `--music path` — bed under VO (sidechain duck by default)
+- `--music-volume 0.12` — bed gain
+- `--soft-bed` — quiet generated bed if no music file
+- `--no-duck` — flat bed volume (no sidechain)
+- `--reference path/to/cut.mp4` — extract Style DNA, then plan
+- `--fill-gaps` — auto-fill GAP queue from registry/catalog
+- `--package DIR` — export review package after render
+- `--post-qc` / `--no-post-qc`
 
-## review
+## package — export review folder
+
 ```bash
-python scripts/atlas.py review --edit path/edit_spec.json --video path/out.mp4 --out review.html
+python scripts/atlas.py package \
+  --edit work/edit_spec.json \
+  --video renders/out.mp4 \
+  --out packages/cut_v1
 ```
 
-## notes
+## fill — close acquisition gaps
+
 ```bash
-python scripts/atlas.py notes --edit edit_spec.json --notes notes.txt --out revision.json
+python scripts/atlas.py fill \
+  --edit work/edit_spec.json \
+  --queue work/acquisition_queue.json \
+  --out-edit work/edit_filled.json \
+  --out-queue work/queue_filled.json \
+  --accept-weak
 ```
 
-## queue
+## notes → revise loop
+
 ```bash
-python scripts/asset_queue.py init --fit fit_report.json --out acquisition_queue.json
+# After editing packages/cut_v1/NOTES.txt:
+python scripts/review_loop.py apply \
+  --package packages/cut_v1 \
+  --audio voice.mp3 \
+  --out renders/out_v2.mp4 \
+  --post-qc
 ```
 
-## fit
-```bash
-python scripts/atlas.py fit --edit edit_spec.json --out fit_report.json
-```
-
-## ready
-```bash
-python scripts/atlas.py ready --fit fit_report.json --queue acquisition_queue.json --edit edit_spec.json
-```
-
-## qc-render
-```bash
-python scripts/atlas.py qc-render --video out.mp4 --edit edit_spec.json --out post_qc.json
-```
-
-## qc-provenance
-```bash
-python scripts/atlas.py qc-provenance --edit edit_spec.json --profile examples/profiles/investigative.json --fail-closed
-```
-
-## qc-rhythm
-```bash
-python scripts/atlas.py qc-rhythm --edit edit_spec.json --profile examples/profiles/product.json --out rhythm.json
-```
-
-Also: `python scripts/atlas_pipeline.py` for the orchestrated path with the same flags.
+Also: `listen`, `plan`, `revise`, `fit`, `queue`, `ready`, `qc-render`, `qc-provenance`, `qc-rhythm`, `review`.
